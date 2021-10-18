@@ -8,17 +8,19 @@
    Description :
 -------------------------------------------------
 """
+import collections
 import os
 import json
 import pickle
 import subprocess
 import time
 import logging
-from typing import Any, List, Sequence, Tuple, Iterable
+from typing import Any, List, Sequence, Tuple, Iterable, Dict
 
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
+
 
 # 创建一个目录
 def create_dir_path(path: str):
@@ -182,9 +184,29 @@ def execute_cmd(cmd: str):
     logger.info(f"status:{status}\noutput{output}")
     return status, output
 
+
 # 将list of list 拍平成一个list
 def flat(seq: Sequence[Iterable]) -> Iterable:
     if isinstance(seq, list):
         return [e for item in seq for e in item]
     else:
         return (e for item in seq for e in item)
+
+
+# 将$seq序列聚合成dict。 key表示字典key生成的函数。 map_func表示字典value值的映射函数。
+# 返回的字典会根据value序列长度倒序排序
+def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x,
+            sort_type="v_len", reverse=True) -> Dict[Any, List]:
+    rs_dict = collections.defaultdict(list)
+    for i in seq:
+        rs_dict[key(i)].append(map_func(i))
+
+    def sort_func(x):
+        if sort_type == "v_len":
+            return len(x[1])
+        if sort_type == "k":
+            return x[0]
+        return 0
+
+    items = sorted(rs_dict.items(), key=sort_func, reverse=reverse)
+    return collections.OrderedDict(items)

@@ -17,3 +17,12 @@ class TestUtils(unittest.TestCase):
         val = dict(a=12, b=12.13342352523, c="c")
         val_str = jdumps(val)
         logger.info(val_str)
+
+    def test_groupby(self):
+        l = [1, 1, 1, 2, 2, 3, 5, 5, 5, 1]
+        g = groupby(l, map_func=lambda x: x ** 2)
+        logger.info(g)
+        g = groupby(l, sort_type="k", reverse=False)
+        logger.info(g)
+
+
