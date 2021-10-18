@@ -18,7 +18,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     package_dir={"": "."},
     package_data={},
-    url='git@git.aipp.io:chenhao/ConfigAI.git',
+    url='https://github.com/jerrychen1990/snippets.git',
     license='MIT Licence',
     author='Chen Hao',
     author_email='jerrychen1990@gmail.com',
