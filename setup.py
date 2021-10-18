@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+"""
+-------------------------------------------------
+   File Name：     setup
+   Description :
+   Author :       chenhao
+   date：          2021/4/6
+-------------------------------------------------
+   Change Activity:
+                   2021/4/6:
+-------------------------------------------------
+"""
+from setuptools import setup, find_packages
+
+setup(
+    name='snippets',
+    version='0.0.1',
+    packages=find_packages(exclude=['tests*']),
+    package_dir={"": "."},
+    package_data={},
+    url='git@git.aipp.io:chenhao/ConfigAI.git',
+    license='MIT Licence',
+    author='Chen Hao',
+    author_email='jerrychen1990@gmail.com',
+    zip_safe=True,
+    description='useful python snippets',
+)
