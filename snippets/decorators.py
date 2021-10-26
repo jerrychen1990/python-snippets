@@ -30,6 +30,29 @@ def log_cost_time(func):
 
     return wrapper
 
+# 执行函数时输出函数的参数以及返回值
+def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
+                      exclude_self=True):
+    def wrapper(func):
+        def wrapped_func(*args, **kwargs):
+            if input_level:
+                show_args = args
+                if exclude_self and len(args) > 1:
+                    show_args = args[1:]
+                msg = f"call function:{func} with\n args:{show_args}\n kwargs:{kwargs}"
+                logger.log(level=input_level, msg=msg)
+
+            res = func(*args, **kwargs)
+            if result_level:
+                msg = f"function:{func} return with:\n{res}"
+                logger.log(level=result_level, msg=msg)
+            return res
+
+        return wrapped_func
+
+    return wrapper
+
+
 # 确保参数中path的文件所在的目录存在，不存在则创建一个
 def ensure_file_path(func):
     @wraps(func)
@@ -39,6 +62,7 @@ def ensure_file_path(func):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -52,6 +76,7 @@ def ensure_dir_path(func):
         return func(*args, **kwargs)
 
     return wrapper
+
 
 # 忽略过多的kwarg参数
 def discard_kwarg(func):
