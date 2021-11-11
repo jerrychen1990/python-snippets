@@ -12,9 +12,14 @@
 """
 from setuptools import setup, find_packages
 
+REQ = [
+    "tqdm==4.55.2"
+]
+
 setup(
-    name='snippets',
+    name='python-snippets',
     version='0.0.1',
+    install_requires=REQ,
     packages=find_packages(exclude=['tests*']),
     package_dir={"": "."},
     package_data={},
@@ -23,5 +28,5 @@ setup(
     author='Chen Hao',
     author_email='jerrychen1990@gmail.com',
     zip_safe=True,
-    description='useful python snippets',
+    description='useful python python-snippets',
 )
