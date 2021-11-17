@@ -40,18 +40,18 @@ class PythonObjectEncoder(json.JSONEncoder):
 
 
 # 将$obj转json string。默认ensure_ascii=False,并用indent=4展示
-def jdumps(obj: Any) -> str:
-    return json.dumps(obj, ensure_ascii=False, indent=4, cls=PythonObjectEncoder)
+def jdumps(obj: Any, encoder=PythonObjectEncoder) -> str:
+    return json.dumps(obj, ensure_ascii=False, indent=4, cls=encoder)
 
 
 # 将$obj转json string 写入$fp。$fp可以是一个文件路径，也可以是一个open函数打开的对象
-def jdump(obj: Any, fp):
+def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
     if isinstance(fp, str):
         create_dir_path(fp)
         with open(fp, 'w') as fp:
-            json.dump(obj, fp, ensure_ascii=False, indent=4, cls=PythonObjectEncoder)
+            json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
     else:
-        json.dump(obj, fp, ensure_ascii=False, indent=4, cls=PythonObjectEncoder)
+        json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
 
 
 # 将一个string的列表写入文件，常用于构造schema文件
