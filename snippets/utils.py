@@ -210,3 +210,19 @@ def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x,
 
     items = sorted(rs_dict.items(), key=sort_func, reverse=reverse)
     return collections.OrderedDict(items)
+
+
+def star_surround_info(info: str, fix_length=128) -> str:
+    star_num = max(fix_length - len(info), 2)
+    left_star_num = star_num // 2
+    right_star_num = star_num - left_star_num
+    rs = "*" * left_star_num + info + "*" * right_star_num
+    return rs
+
+# # 将star_surround_info处理后的信息用logger或者print方法输出
+def print_info(info, target_logger=None, fix_length=128):
+    star_info = star_surround_info(info, fix_length)
+    if target_logger:
+        target_logger.info(star_info)
+    else:
+        print(star_info)
