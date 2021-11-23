@@ -13,7 +13,7 @@
 from setuptools import setup, find_packages
 
 REQ = [
-    "tqdm==4.55.2"
+    "tqdm"
 ]
 
 setup(
