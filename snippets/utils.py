@@ -15,7 +15,8 @@ import pickle
 import subprocess
 import time
 import logging
-from typing import Any, List, Sequence, Tuple, Iterable, Dict
+from pydantic import BaseModel
+from typing import Any, List, Sequence, Tuple, Iterable, Dict, _GenericAlias
 
 from tqdm import tqdm
 
@@ -36,6 +37,9 @@ class PythonObjectEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, set):
             return list(obj)
+        if isinstance(obj, BaseModel):
+            return obj.dict(exclude_none=True, exclude_defaults=True)
+
         return {'_python_object': pickle.dumps(obj)}
 
 
@@ -116,9 +120,9 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
         idx = 0
         with fp as fp:
             for line in fp:
-                if not line:
+                if not line.strip():
                     continue
-                yield jloads(line)
+                yield jloads(line.strip())
                 idx += 1
                 if max_data_num and idx >= max_data_num:
                     break
@@ -226,3 +230,20 @@ def print_info(info, target_logger=None, fix_length=128):
         target_logger.info(star_info)
     else:
         print(star_info)
+
+def get_cur_dir():
+    return os.path.abspath(os.path.dirname(__file__))
+
+def union_parse_obj(union:_GenericAlias, d:dict):
+    for cls in union.__args__:
+        try:
+            obj = cls(**d)
+            return obj
+        except:
+            pass
+    raise Excpetion(f"fail to convert {d} to union {union}")
+
+
+
+
+

@@ -13,7 +13,8 @@
 from setuptools import setup, find_packages
 
 REQ = [
-    "tqdm"
+    "tqdm",
+    "pydantic"
 ]
 
 setup(

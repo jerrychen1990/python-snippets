@@ -10,6 +10,7 @@
 """
 import unittest
 from snippets.utils import *
+from typing import Union
 
 
 class TestUtils(unittest.TestCase):
@@ -25,4 +26,19 @@ class TestUtils(unittest.TestCase):
         g = groupby(l, sort_type="k", reverse=False)
         logger.info(g)
 
+    def test_get_cur_dir(self):
+        cur_path = get_cur_dir()
+        logger.info(cur_path)
 
+    def test_union_parse(self):
+        class A(BaseModel):
+            name: str
+
+        class B(BaseModel):
+            n: str
+
+        C = Union[B, A]
+
+        d = {"name": "name"}
+        obj = union_parse_obj(C, d)
+        logger.info(obj)
