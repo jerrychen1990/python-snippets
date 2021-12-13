@@ -241,7 +241,7 @@ def union_parse_obj(union:_GenericAlias, d:dict):
             return obj
         except:
             pass
-    raise Excpetion(f"fail to convert {d} to union {union}")
+    raise Exception(f"fail to convert {d} to union {union}")
 
 
 
