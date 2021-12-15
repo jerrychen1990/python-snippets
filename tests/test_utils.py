@@ -9,13 +9,14 @@
 -------------------------------------------------
 """
 import unittest
+from datetime import datetime
 from snippets.utils import *
 from typing import Union
 
 
 class TestUtils(unittest.TestCase):
     def test_jdump(self):
-        val = dict(a=12, b=12.13342352523, c="c")
+        val = dict(a=12, b=12.13342352523, c="c", d=datetime.now())
         val_str = jdumps(val)
         logger.info(val_str)
 

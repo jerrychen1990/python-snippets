@@ -39,6 +39,8 @@ class PythonObjectEncoder(json.JSONEncoder):
             return list(obj)
         if isinstance(obj, BaseModel):
             return obj.dict(exclude_none=True, exclude_defaults=True)
+        if isinstance(obj, datetime):
+            return obj.strftime("%Y-%M-%D %H:%m:%s")
 
         return {'_python_object': pickle.dumps(obj)}
 
