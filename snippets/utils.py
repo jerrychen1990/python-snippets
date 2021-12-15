@@ -16,6 +16,8 @@ import subprocess
 import time
 import logging
 from pydantic import BaseModel
+from datetime import datetime
+
 from typing import Any, List, Sequence, Tuple, Iterable, Dict, _GenericAlias
 
 from tqdm import tqdm
@@ -40,7 +42,7 @@ class PythonObjectEncoder(json.JSONEncoder):
         if isinstance(obj, BaseModel):
             return obj.dict(exclude_none=True, exclude_defaults=True)
         if isinstance(obj, datetime):
-            return obj.strftime("%Y-%M-%D %H:%m:%s")
+            return obj.strftime("%Y-%M-%d %H:%m:%S")
 
         return {'_python_object': pickle.dumps(obj)}
 
