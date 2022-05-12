@@ -18,17 +18,32 @@ logger = logging.getLogger(__name__)
 
 
 # 输出function执行耗时的函数
-def log_cost_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_timestamp = time.time()
-        res = func(*args, **kwargs)
-        end_timestamp = time.time()
-        cost = end_timestamp - start_timestamp
-        logger.info(f"function:{func.__name__} cost:{cost:4.3f} seconds")
-        return res
+def log_cost_time(name=None, level=logging.INFO):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            with LogCostContext(name=name if name else func.__name__, level=level):
+                res = func(*args, **kwargs)
+            return res
+
+        return wrapped
 
     return wrapper
+
+
+class LogCostContext(object):
+    def __init__(self, name, level=logging.INFO):
+        self.name = name
+        self.level = level
+
+    def __enter__(self):
+        logger.log(msg=f"{self.name} starts", level=self.level)
+        self.st = time.time()
+
+    def __exit__(self, type, value, traceback):
+        cost = time.time() - self.st
+        logger.log(msg=f"{self.name} ends, cost:{cost:4.3f} seconds", level=self.level)
+
 
 # 执行函数时输出函数的参数以及返回值
 def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
