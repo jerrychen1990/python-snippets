@@ -24,10 +24,11 @@ setup(
     packages=find_packages(exclude=['tests*']),
     package_dir={"": "."},
     package_data={},
-    url='https://github.com/jerrychen1990/snippets.git',
+    url='https://github.com/jerrychen1990/python-snippets.git',
     license='MIT',
     author='Chen Hao',
     author_email='jerrychen1990@gmail.com',
     zip_safe=True,
-    description='useful python python-snippets',
+    description='useful python snippets',
+    long_description="useful python snippets"
 )
