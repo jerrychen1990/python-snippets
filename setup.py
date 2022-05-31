@@ -25,7 +25,7 @@ setup(
     package_dir={"": "."},
     package_data={},
     url='https://github.com/jerrychen1990/snippets.git',
-    license='MIT Licence',
+    license='MIT',
     author='Chen Hao',
     author_email='jerrychen1990@gmail.com',
     zip_safe=True,
