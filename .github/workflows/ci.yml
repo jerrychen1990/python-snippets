@@ -15,4 +15,4 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir -r requirements.txt
       - name: Run UT
-        run: sh run-ut.sh
+        run: sh run_ut.sh
