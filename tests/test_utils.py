@@ -9,7 +9,7 @@
 -------------------------------------------------
 """
 import unittest
-from datetime import datetime
+from pydantic import BaseModel
 from snippets.utils import *
 from typing import Union
 

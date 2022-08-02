@@ -56,7 +56,7 @@ def jdumps(obj: Any, encoder=PythonObjectEncoder) -> str:
 def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
     if isinstance(fp, str):
         create_dir_path(fp)
-        with open(fp, 'w') as fp:
+        with open(fp, mode='w', encoding="utf8") as fp:
             json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
     else:
         json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
@@ -65,7 +65,7 @@ def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
 # 将一个string的列表写入文件，常用于构造schema文件
 def dump_lines(lines: List[str], fp):
     if isinstance(fp, str):
-        fp = open(fp, "w")
+        fp = open(fp, mode="w", encoding="utf8")
     with fp:
         lines = [e + "\n" for e in lines]
         fp.writelines(lines)
@@ -76,7 +76,7 @@ def jdump_lines(obj, fp, mode="w", progbar=False):
     iter_obj = tqdm(obj) if progbar else obj
     if isinstance(fp, str):
         create_dir_path(fp)
-        fp = open(fp, mode)
+        fp = open(fp, mode=mode, encoding="utf8")
     with fp:
         for item in iter_obj:
             line = json.dumps(item, ensure_ascii=False, cls=PythonObjectEncoder) + "\n"
@@ -96,7 +96,7 @@ def as_python_object(dct):
 # 将$fp的内容load成一个json对象。$fp可以是一个文件路径，也可以是一个open函数打开的对象
 def jload(fp):
     if isinstance(fp, str):
-        fp = open(fp, 'r')
+        fp = open(fp, mode='r', encoding="utf8")
     with fp as fp:
         rs = json.load(fp, object_hook=as_python_object)
     return rs
@@ -120,7 +120,7 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 
     def get_gen(fp):
         if isinstance(fp, str):
-            fp = open(fp, 'r')
+            fp = open(fp, mode='r', encoding="utf8")
         idx = 0
         with fp as fp:
             for line in fp:
@@ -141,7 +141,7 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
         create_dir_path(fp)
-        fp = open(fp, "r")
+        fp = open(fp, mode="r", encoding="utf8")
     with fp:
         lines = fp.readlines()
         if return_generator:
