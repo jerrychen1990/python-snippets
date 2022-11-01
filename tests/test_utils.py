@@ -9,9 +9,9 @@
 -------------------------------------------------
 """
 import unittest
-from pydantic import BaseModel
-from snippets.utils import *
 from typing import Union
+
+from snippets.utils import *
 
 
 class TestUtils(unittest.TestCase):

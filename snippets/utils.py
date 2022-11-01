@@ -15,6 +15,7 @@ import pickle
 import subprocess
 import time
 import logging
+import numpy as np
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -43,8 +44,14 @@ class PythonObjectEncoder(json.JSONEncoder):
             return obj.dict(exclude_none=True, exclude_defaults=True)
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%M-%d %H:%m:%S")
-
-        return {'_python_object': pickle.dumps(obj)}
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super().default(obj)
 
 
 # 将$obj转json string。默认ensure_ascii=False,并用indent=4展示
@@ -227,6 +234,7 @@ def star_surround_info(info: str, fix_length=128) -> str:
     rs = "*" * left_star_num + info + "*" * right_star_num
     return rs
 
+
 # # 将star_surround_info处理后的信息用logger或者print方法输出
 def print_info(info, target_logger=None, fix_length=128):
     star_info = star_surround_info(info, fix_length)
@@ -235,10 +243,12 @@ def print_info(info, target_logger=None, fix_length=128):
     else:
         print(star_info)
 
+
 def get_cur_dir():
     return os.path.abspath(os.path.dirname(__file__))
 
-def union_parse_obj(union:_GenericAlias, d:dict):
+
+def union_parse_obj(union: _GenericAlias, d: dict):
     for cls in union.__args__:
         try:
             obj = cls(**d)
@@ -246,8 +256,3 @@ def union_parse_obj(union:_GenericAlias, d:dict):
         except:
             pass
     raise Exception(f"fail to convert {d} to union {union}")
-
-
-
-
-

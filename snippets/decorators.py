@@ -102,3 +102,24 @@ def discard_kwarg(func):
         return func(*args, **kwargs)
 
     return wrap
+
+
+# adapt function with single elements
+def adapt_single(ele_name):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            if ele_name in kwargs:
+                is_single = not isinstance(kwargs[ele_name], list)
+            else:
+                is_single = False
+            if is_single:
+                kwargs[ele_name] = [kwargs[ele_name]]
+            rs = func(*args, **kwargs)
+            if is_single:
+                rs = rs[0]
+            return rs
+
+        return wrapped
+
+    return wrapper
