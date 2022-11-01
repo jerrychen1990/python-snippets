@@ -19,7 +19,7 @@ REQ = [
 
 setup(
     name='python-snippets',
-    version='0.0.3',
+    version='0.0.6',
     install_requires=REQ,
     packages=find_packages(exclude=['tests*']),
     package_dir={"": "."},
