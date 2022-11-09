@@ -21,5 +21,11 @@ class TestUtils(unittest.TestCase):
         batch_rs = add1(data=[1, 2, 3])
         self.assertEqual([2, 3, 4], batch_rs)
 
+        batch_rs = add1(data=(1, 2, 3))
+        self.assertEqual([2, 3, 4], batch_rs)
+
+        batch_rs = add1(data=range(1, 4))
+        self.assertEqual([2, 3, 4], batch_rs)
+
         single_rs = add1(data=1)
         self.assertEqual(2, single_rs)

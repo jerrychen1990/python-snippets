@@ -13,6 +13,7 @@ import logging
 import time
 import os
 from functools import wraps
+from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ def adapt_single(ele_name):
         @wraps(func)
         def wrapped(*args, **kwargs):
             if ele_name in kwargs:
-                is_single = not isinstance(kwargs[ele_name], list)
+                is_single = not isinstance(kwargs[ele_name], Iterable)
             else:
                 is_single = False
             if is_single:
