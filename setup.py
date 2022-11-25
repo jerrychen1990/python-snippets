@@ -35,7 +35,7 @@ def get_version(pkg_name):
         return None
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     print(sys.argv)
     if len(sys.argv) >= 4 and sys.argv[-1].startswith("v"):
         version = sys.argv.pop(-1)
