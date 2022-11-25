@@ -43,3 +43,4 @@ class TestUtils(unittest.TestCase):
         d = {"name": "name"}
         obj = union_parse_obj(C, d)
         logger.info(obj)
+

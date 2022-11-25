@@ -125,12 +125,12 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
     Returns: json object的generator
     """
 
-    def get_gen(fp):
-        if isinstance(fp, str):
-            fp = open(fp, mode='r', encoding="utf8")
+    def get_gen(f):
+        if isinstance(f, str):
+            f = open(f, mode='r', encoding="utf8")
         idx = 0
-        with fp as fp:
-            for line in fp:
+        with f as f:
+            for line in f:
                 if not line.strip():
                     continue
                 yield jloads(line.strip())
@@ -147,7 +147,6 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 # 一行一行地读取文件内容
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
-        create_dir_path(fp)
         fp = open(fp, mode="r", encoding="utf8")
     with fp:
         lines = fp.readlines()
