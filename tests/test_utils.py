@@ -9,9 +9,9 @@
 -------------------------------------------------
 """
 import unittest
-from datetime import datetime
-from snippets.utils import *
 from typing import Union
+
+from snippets.utils import *
 
 
 class TestUtils(unittest.TestCase):
@@ -43,3 +43,4 @@ class TestUtils(unittest.TestCase):
         d = {"name": "name"}
         obj = union_parse_obj(C, d)
         logger.info(obj)
+

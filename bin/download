@@ -1,0 +1,51 @@
+#!/usr/bin/env python 
+# encoding: utf-8 
+"""
+@author: chenhao
+@file: tmp.py
+@time: 2022/8/8 18:30
+"""
+import os
+import click
+
+HPC_SERVER = "chenhao@192.168.90.149"
+
+HOME_MAP = {
+    HPC_SERVER: (
+        "/home/chenhao/", "/Users/chenhao/"
+    )
+}
+
+
+@click.command()
+@click.option('--dst_path', '-d', help='dst path')
+@click.option('--current', '-c', is_flag=True, default=False, help='whether download to current dir')
+@click.argument('src_path')
+def download(src_path, dst_path=None, current=True):
+    """
+    download src_path from remote server to dst_path
+    if dst_path is not None, download to dst_path
+    if --current is set, download to current dir
+    else download to the same dir as src_path, just replace the home dir
+    """
+    file_name = os.path.basename(os.path.normpath(src_path))
+    is_dir = src_path.endswith("/")
+
+    if not dst_path:
+        if current:
+            cwd = os.getcwd()
+            dst_path = os.path.join(cwd, file_name)
+        else:
+            scr_home, tgt_home = HOME_MAP[HPC_SERVER]
+            dst_path = src_path.replace(scr_home, tgt_home)
+
+    dst_dir_path = os.path.dirname(dst_path)
+    if not os.path.exists(dst_dir_path):
+        os.makedirs(dst_dir_path)
+    cmd = f"scp {'-r' if is_dir else ''} {HPC_SERVER}:{src_path} {dst_path}"
+    click.echo(cmd)
+    os.system(cmd)
+
+
+if __name__ == "__main__":
+    download()

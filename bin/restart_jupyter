@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+echo "stopping service"
+ps aux | grep chenhao | grep jupyter |grep -v 'restart_jupyter' | grep -v 'grep' | awk '{print $2}' | xargs -t kill
+echo "starting service"
+nohup jupyter notebook >${LOG_HOME}/jupyter.log&
+echo "service started"

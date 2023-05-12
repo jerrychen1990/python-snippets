@@ -15,6 +15,7 @@ import pickle
 import subprocess
 import time
 import logging
+import numpy as np
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -43,8 +44,14 @@ class PythonObjectEncoder(json.JSONEncoder):
             return obj.dict(exclude_none=True, exclude_defaults=True)
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%M-%d %H:%m:%S")
-
-        return {'_python_object': pickle.dumps(obj)}
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super().default(obj)
 
 
 # 将$obj转json string。默认ensure_ascii=False,并用indent=4展示
@@ -56,7 +63,7 @@ def jdumps(obj: Any, encoder=PythonObjectEncoder) -> str:
 def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
     if isinstance(fp, str):
         create_dir_path(fp)
-        with open(fp, 'w') as fp:
+        with open(fp, mode='w', encoding="utf8") as fp:
             json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
     else:
         json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
@@ -65,7 +72,7 @@ def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
 # 将一个string的列表写入文件，常用于构造schema文件
 def dump_lines(lines: List[str], fp):
     if isinstance(fp, str):
-        fp = open(fp, "w")
+        fp = open(fp, mode="w", encoding="utf8")
     with fp:
         lines = [e + "\n" for e in lines]
         fp.writelines(lines)
@@ -76,7 +83,7 @@ def jdump_lines(obj, fp, mode="w", progbar=False):
     iter_obj = tqdm(obj) if progbar else obj
     if isinstance(fp, str):
         create_dir_path(fp)
-        fp = open(fp, mode)
+        fp = open(fp, mode=mode, encoding="utf8")
     with fp:
         for item in iter_obj:
             line = json.dumps(item, ensure_ascii=False, cls=PythonObjectEncoder) + "\n"
@@ -96,7 +103,7 @@ def as_python_object(dct):
 # 将$fp的内容load成一个json对象。$fp可以是一个文件路径，也可以是一个open函数打开的对象
 def jload(fp):
     if isinstance(fp, str):
-        fp = open(fp, 'r')
+        fp = open(fp, mode='r', encoding="utf8")
     with fp as fp:
         rs = json.load(fp, object_hook=as_python_object)
     return rs
@@ -118,12 +125,12 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
     Returns: json object的generator
     """
 
-    def get_gen(fp):
-        if isinstance(fp, str):
-            fp = open(fp, 'r')
+    def get_gen(f):
+        if isinstance(f, str):
+            f = open(f, mode='r', encoding="utf8")
         idx = 0
-        with fp as fp:
-            for line in fp:
+        with f as f:
+            for line in f:
                 if not line.strip():
                     continue
                 yield jloads(line.strip())
@@ -140,8 +147,7 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 # 一行一行地读取文件内容
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
-        create_dir_path(fp)
-        fp = open(fp, "r")
+        fp = open(fp, mode="r", encoding="utf8")
     with fp:
         lines = fp.readlines()
         if return_generator:
@@ -227,6 +233,7 @@ def star_surround_info(info: str, fix_length=128) -> str:
     rs = "*" * left_star_num + info + "*" * right_star_num
     return rs
 
+
 # # 将star_surround_info处理后的信息用logger或者print方法输出
 def print_info(info, target_logger=None, fix_length=128):
     star_info = star_surround_info(info, fix_length)
@@ -235,10 +242,12 @@ def print_info(info, target_logger=None, fix_length=128):
     else:
         print(star_info)
 
+
 def get_cur_dir():
     return os.path.abspath(os.path.dirname(__file__))
 
-def union_parse_obj(union:_GenericAlias, d:dict):
+
+def union_parse_obj(union: _GenericAlias, d: dict):
     for cls in union.__args__:
         try:
             obj = cls(**d)
@@ -246,8 +255,3 @@ def union_parse_obj(union:_GenericAlias, d:dict):
         except:
             pass
     raise Exception(f"fail to convert {d} to union {union}")
-
-
-
-
-
