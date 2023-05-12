@@ -32,18 +32,18 @@ def log_cost_time(name=None, level=logging.INFO):
 
 
 class LogCostContext(object):
-    def __init__(self, name, level=logging.INFO):
+    def __init__(self, name, level=logging.INFO, star_num=0):
         self.name = name
         self.level = level
+        self.star_num = star_num
 
     def __enter__(self):
-        logger.log(msg=f"{self.name} starts", level=self.level)
+        logger.log(msg="*" * self.star_num + f"{self.name} starts" + "*" * self.star_num, level=self.level)
         self.st = time.time()
 
     def __exit__(self, type, value, traceback):
         cost = time.time() - self.st
-        logger.log(msg=f"{self.name} ends, cost:{cost:4.3f} seconds", level=self.level)
-
+        logger.log(msg="*" * self.star_num +f"{self.name} ends, cost:{cost:4.3f} seconds"+"*" * self.star_num, level=self.level)
 
 # 执行函数时输出函数的参数以及返回值
 def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
