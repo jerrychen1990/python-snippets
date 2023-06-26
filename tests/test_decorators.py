@@ -8,7 +8,9 @@
    Description :
 -------------------------------------------------
 """
+import random
 import unittest
+
 from snippets.decorators import *
 
 
@@ -33,3 +35,11 @@ class TestUtils(unittest.TestCase):
 
         single_rs = add1(data=dict(data=1))
         self.assertEqual(2, single_rs)
+
+    def test_log_cost(self):
+        @log_cost_time(star_len=40)
+        def sleep_add(a, b):
+            time.sleep(random.random())
+            return a + b
+
+        sleep_add(1, 2)

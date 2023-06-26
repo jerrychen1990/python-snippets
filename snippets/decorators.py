@@ -10,20 +10,22 @@
 """
 import inspect
 import logging
-import time
 import os
+import time
 from functools import wraps
-from typing import Iterable, List, Generator, Tuple
+from typing import List, Generator, Tuple
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 # 输出function执行耗时的函数
-def log_cost_time(name=None, level=logging.INFO):
+def log_cost_time(name=None, level=logging.INFO, star_len=0):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            with LogCostContext(name=name if name else func.__name__, level=level):
+            with LogCostContext(name=name if name else func.__name__,
+                                level=level, star_len=star_len):
                 res = func(*args, **kwargs)
             return res
 
@@ -33,18 +35,25 @@ def log_cost_time(name=None, level=logging.INFO):
 
 
 class LogCostContext(object):
-    def __init__(self, name, level=logging.INFO, star_num=0):
+    def __init__(self, name, level=logging.INFO, star_len=0):
         self.name = name
         self.level = level
-        self.star_num = star_num
+        self.star_len = star_len
 
     def __enter__(self):
-        logger.log(msg="*" * self.star_num + f"{self.name} starts" + "*" * self.star_num, level=self.level)
+        msg = f"{self.name} starts"
+        half_star_len = max((self.star_len - len(msg)) // 2, 0)
+        msg = "*" * half_star_len + msg + "*" * half_star_len
+        logger.log(msg=msg, level=self.level)
         self.st = time.time()
 
     def __exit__(self, type, value, traceback):
         cost = time.time() - self.st
-        logger.log(msg="*" * self.star_num +f"{self.name} ends, cost:{cost:4.3f} seconds"+"*" * self.star_num, level=self.level)
+        msg = f"{self.name} ends, cost:{cost:4.3f} seconds"
+        half_star_len = max((self.star_len - len(msg)) // 2, 0)
+        msg = "*" * half_star_len + msg + "*" * half_star_len
+        logger.log(msg=msg, level=self.level)
+
 
 # 执行函数时输出函数的参数以及返回值
 def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
@@ -97,11 +106,9 @@ def ensure_dir_path(func):
 # 忽略过多的kwarg参数
 def discard_kwarg(func):
     arg_names = inspect.signature(func).parameters.keys()
-
     def wrap(*args, **kwargs):
         kwargs = {k: v for k, v in kwargs.items() if k in arg_names}
         return func(*args, **kwargs)
-
     return wrap
 
 
