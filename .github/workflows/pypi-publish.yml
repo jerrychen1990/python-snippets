@@ -37,10 +37,10 @@ jobs:
       - name: Build package
         run: |
           echo $RELEASE_VERSION
+          echo ${{ secrets.PYPI_API_TOKEN }}
           python setup.py sdist bdist_wheel $RELEASE_VERSION
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          password: pypi-AgEIcHlwaS5vcmcCJDA4MDUwMTk5LTAxY2EtNGEzYS1hNDk3LWZjYjYxYzk0YjQyYgACJXsicGVybWlzc2lvbnMiOiAidXNlciIsICJ2ZXJzaW9uIjogMX0AAAYgYfigQvsmxEN8GRiI447UwoNeH4Rb59_wSn4TqmPCu1Q
           skip_existing: true
