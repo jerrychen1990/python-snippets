@@ -18,7 +18,6 @@ import logging
 import numpy as np
 from pydantic import BaseModel
 from datetime import datetime
-
 from typing import Any, List, Sequence, Tuple, Iterable, Dict, _GenericAlias
 
 from tqdm import tqdm
@@ -86,7 +85,8 @@ def jdump_lines(obj, fp, mode="w", progbar=False):
         fp = open(fp, mode=mode, encoding="utf8")
     with fp:
         for item in iter_obj:
-            line = json.dumps(item, ensure_ascii=False, cls=PythonObjectEncoder) + "\n"
+            line = json.dumps(item, ensure_ascii=False,
+                              cls=PythonObjectEncoder) + "\n"
             fp.write(line)
 
 
@@ -131,16 +131,17 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
         idx = 0
         with f as f:
             for line in f:
-                if not line.strip():
+                line = line.strip()
+                if not line:
                     continue
-                yield jloads(line.strip())
+                yield jloads(line)
                 idx += 1
                 if max_data_num and idx >= max_data_num:
                     break
 
     gen = get_gen(fp)
     if return_generator:
-        gen
+        return gen
     return list(gen)
 
 
@@ -177,6 +178,7 @@ def get_batched_data(data: Sequence, batch_size: int):
     if batch:
         yield batch
 
+batchify = get_batched_data
 
 # 将$seq序列转化成下标到元素以及元素到下标的dict
 def seq2dict(seq: Sequence) -> Tuple[dict, dict]:
