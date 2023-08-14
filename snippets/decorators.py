@@ -8,12 +8,14 @@
    Description :
 -------------------------------------------------
 """
+from concurrent.futures import ThreadPoolExecutor
 import inspect
 import logging
 import os
 import time
+from tqdm import tqdm
 from functools import wraps
-from typing import List, Generator, Tuple
+from typing import Iterable, List, Generator, Tuple
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -106,6 +108,7 @@ def ensure_dir_path(func):
 # 忽略过多的kwarg参数
 def discard_kwarg(func):
     arg_names = inspect.signature(func).parameters.keys()
+
     def wrap(*args, **kwargs):
         kwargs = {k: v for k, v in kwargs.items() if k in arg_names}
         return func(*args, **kwargs)
@@ -118,7 +121,8 @@ def adapt_single(ele_name):
         @wraps(func)
         def wrapped(*args, **kwargs):
             if ele_name in kwargs:
-                is_single = not isinstance(kwargs[ele_name], (List, Generator, Tuple))
+                is_single = not isinstance(
+                    kwargs[ele_name], (List, Generator, Tuple))
             else:
                 is_single = False
             if is_single:
@@ -127,7 +131,17 @@ def adapt_single(ele_name):
             if is_single:
                 rs = rs[0]
             return rs
-
         return wrapped
+    return wrapper
 
+
+def batch_process(work_num):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(data: Iterable, *args, **kwargs):
+            # add a thread pool here
+            executors = ThreadPoolExecutor(work_num)
+            rs = executors.map(lambda x: func(x, *args, **kwargs), tqdm(data))
+            return rs
+        return wrapped
     return wrapper

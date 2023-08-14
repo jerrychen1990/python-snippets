@@ -43,3 +43,20 @@ class TestUtils(unittest.TestCase):
             return a + b
 
         sleep_add(1, 2)
+
+    def test_multi_work():
+        @batch_process(work_num=2)
+        def add1(a):
+            return a+1
+
+        rs = add1(seq=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        print(rs)
+
+
+if __name__ == "__main__":
+    @batch_process(work_num=2)
+    def add1(a, b=2):
+        return a+b
+
+    rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], b=3)
+    print(list(rs))
