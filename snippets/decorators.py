@@ -8,14 +8,15 @@
    Description :
 -------------------------------------------------
 """
-from concurrent.futures import ThreadPoolExecutor
 import inspect
 import logging
 import os
 import time
-from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
-from typing import Iterable, List, Generator, Tuple
+from typing import Generator, Iterable, List, Tuple
+
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -141,7 +142,14 @@ def batch_process(work_num):
         def wrapped(data: Iterable, *args, **kwargs):
             # add a thread pool here
             executors = ThreadPoolExecutor(work_num)
-            rs = executors.map(lambda x: func(x, *args, **kwargs), tqdm(data))
+            def _func(x):
+                return func(x, *args, **kwargs)            
+            rs = []
+            rs_iter = executors.map(_func,data)
+            for item in tqdm(rs_iter):
+                rs.append(item)      
             return rs
         return wrapped
     return wrapper
+
+

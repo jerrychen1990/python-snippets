@@ -10,14 +10,16 @@
                    2021/4/6:
 -------------------------------------------------
 """
-import sys
 import os
-from setuptools import setup, find_packages
+import sys
+
+from setuptools import find_packages, setup
 
 REQ = [
     "tqdm",
     "pydantic",
-    "numpy"
+    "numpy",
+    "click"
 ]
 
 

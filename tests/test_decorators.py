@@ -8,6 +8,7 @@
    Description :
 -------------------------------------------------
 """
+import imp
 import random
 import unittest
 
@@ -54,9 +55,13 @@ class TestUtils(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    @batch_process(work_num=2)
+    from time import sleep
+    @batch_process(work_num=3)
     def add1(a, b=2):
+        # print(f"{a}+{b}")
+        sleep(1)
         return a+b
 
     rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], b=3)
-    print(list(rs))
+    print(rs)
+    # print(list(rs))
