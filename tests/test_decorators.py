@@ -45,17 +45,18 @@ class TestUtils(unittest.TestCase):
 
         sleep_add(1, 2)
 
-    def test_multi_work():
+    def test_multi_work(self):
         @batch_process(work_num=2)
         def add1(a):
             return a+1
 
-        rs = add1(seq=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         print(rs)
 
 
 if __name__ == "__main__":
     from time import sleep
+
     @batch_process(work_num=3)
     def add1(a, b=2):
         # print(f"{a}+{b}")
