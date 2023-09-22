@@ -136,20 +136,19 @@ def adapt_single(ele_name):
     return wrapper
 
 
-def batch_process(work_num):
+def batch_process(work_num, return_list=False):
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable, *args, **kwargs):
             # add a thread pool here
             executors = ThreadPoolExecutor(work_num)
+
             def _func(x):
-                return func(x, *args, **kwargs)            
-            rs = []
-            rs_iter = executors.map(_func,data)
-            for item in tqdm(rs_iter):
-                rs.append(item)      
+                return func(x, *args, **kwargs)
+            rs_iter = executors.map(_func, data)
+            rs = tqdm(rs_iter)
+            if return_list:
+                return list(rs)
             return rs
         return wrapped
     return wrapper
-
-
