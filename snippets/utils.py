@@ -9,17 +9,18 @@
 -------------------------------------------------
 """
 import collections
-import os
 import json
+import logging
+import os
 import pickle
+import re
 import subprocess
 import time
-import logging
+from datetime import datetime
+from typing import Any, Dict, Iterable, List, Sequence, Tuple, _GenericAlias
+
 import numpy as np
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Any, List, Sequence, Tuple, Iterable, Dict, _GenericAlias
-
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -178,9 +179,12 @@ def get_batched_data(data: Sequence, batch_size: int):
     if batch:
         yield batch
 
+
 batchify = get_batched_data
 
 # 将$seq序列转化成下标到元素以及元素到下标的dict
+
+
 def seq2dict(seq: Sequence) -> Tuple[dict, dict]:
     item2id = {item: idx for idx, item in enumerate(seq)}
     id2item = {idx: item for idx, item in enumerate(seq)}
@@ -257,3 +261,30 @@ def union_parse_obj(union: _GenericAlias, d: dict):
         except:
             pass
     raise Exception(f"fail to convert {d} to union {union}")
+
+
+def get_latest_version(package_name: str) -> str:
+    cmd = f"pip install {package_name}=="
+    status, output = execute_cmd(cmd)
+    pattern = "\(from versions:(.*?)\)"
+
+    for item in re.findall(pattern, output):
+        
+        # item
+        versions = [tuple(int(i) for i in e.strip().split("."))
+                    for e in item.split(",")]
+        # versions
+        latest_version = max(versions)
+        latest_version = ".".join(str(i) for i in latest_version)
+        return latest_version
+
+
+def get_next_version(version: str, level=0) -> str:
+    pieces = version.split(".")
+    idx = len(pieces) - level - 1
+    val = pieces[idx]
+    if val.startswith("v"):
+        pieces[idx] = "v" + str(int(val[1])+1)
+    else:
+        pieces[idx] = str(int(val)+1)
+    return ".".join(pieces)

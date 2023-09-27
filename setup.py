@@ -15,6 +15,8 @@ import sys
 
 from setuptools import find_packages, setup
 
+from snippets.utils import get_latest_version, get_next_version
+
 REQ = [
     "tqdm",
     "pydantic",
@@ -23,27 +25,13 @@ REQ = [
 ]
 
 
-def get_version(pkg_name):
-    try:
-        libinfo_py = os.path.join(pkg_name, '__init__.py')
-        libinfo_content = open(libinfo_py, 'r', encoding='utf8').readlines()
-        version_line = [l.strip() for l in libinfo_content if l.startswith('__version__')][
-            0
-        ]
-        exec(version_line)
-        return tuple([int(e) for e in locals()["__version__"].split(".")])
-
-    except FileNotFoundError:
-        return None
-
-
 if __name__ == "__main__":
     print(sys.argv)
     if len(sys.argv) >= 4 and sys.argv[-1].startswith("v"):
         version = sys.argv.pop(-1)
     else:
-        version = get_version("snippets")
-        version = ".".join([str(e) for e in version])
+        latest_version = get_latest_version("python-snippets")
+        version = get_next_version(latest_version)
     print(f"version: {version}")
 
     setup(

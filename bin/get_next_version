@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# encoding: utf-8
+"""
+@author: chenhao
+@file: tmp.py
+@time: 2022/8/8 18:30
+"""
+import click
+
+from snippets.utils import get_next_version
+
+
+@click.command()
+@click.option('--level', '-l', default=0, type=int, help='哪个level获取下一个version')
+@click.argument("version")
+def main(version, level=0):
+    print(get_next_version(version, level))
+
+
+if __name__ == "__main__":
+    main()

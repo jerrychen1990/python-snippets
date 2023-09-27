@@ -44,3 +44,11 @@ class TestUtils(unittest.TestCase):
         obj = union_parse_obj(C, d)
         logger.info(obj)
 
+    def test_get_next_version(self):
+        version = "v1.0.0"
+        self.assertEqual("v1.0.1", get_next_version(version))
+        self.assertEqual("v2.0.0", get_next_version(version, 2))
+
+    def test_get_latest_version(self):
+        latest_version = get_latest_version("python-snippets")
+        print(latest_version)
