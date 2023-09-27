@@ -133,3 +133,4 @@ dmypy.json
 upload_package.sh
 
 test.ipynb
+tests/agi-tools.code-workspace

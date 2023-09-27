@@ -53,16 +53,40 @@ class TestUtils(unittest.TestCase):
         rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         print(rs)
 
+    def test_retry(self):
+        @retry(retry_times=3, wait_time=0.1)
+        def rand_func(a):
+            if random.random() < a:
+                print("success")
+            else:
+                raise Exception("fail")
+
+        for i in range(5):
+            rand_func(i/5)
+
 
 if __name__ == "__main__":
     from time import sleep
 
-    @batch_process(work_num=3)
-    def add1(a, b=2):
-        # print(f"{a}+{b}")
-        sleep(1)
-        return a+b
+    @retry(retry_num=3, wait_time=0.1)
+    def rand_func(a):
+        if random.random() < a:
+            print("success")
+        else:
+            raise Exception("fail")
 
-    rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], b=3)
-    print(rs)
+    for i in range(5):
+        try:
+            rand_func(i/5)
+        except Exception as e:
+            print(e)
+
+    # @batch_process(work_num=3)
+    # def add1(a, b=2):
+    #     # print(f"{a}+{b}")
+    #     sleep(1)
+    #     return a+b
+
+    # rs = add1(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], b=3)
+    # print(rs)
     # print(list(rs))

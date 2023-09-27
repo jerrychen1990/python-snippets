@@ -10,7 +10,6 @@
                    2021/4/6:
 -------------------------------------------------
 """
-import os
 import sys
 
 from setuptools import find_packages, setup
@@ -26,16 +25,16 @@ REQ = [
 
 
 if __name__ == "__main__":
-    print(sys.argv)
+    name = "python-snippets"
     if len(sys.argv) >= 4 and sys.argv[-1].startswith("v"):
         version = sys.argv.pop(-1)
     else:
-        latest_version = get_latest_version("python-snippets")
+        latest_version = get_latest_version(name)
         version = get_next_version(latest_version)
     print(f"version: {version}")
 
     setup(
-        name='python-snippets',
+        name=name,
         version=version,
         install_requires=REQ,
         packages=find_packages(exclude=['tests*']),

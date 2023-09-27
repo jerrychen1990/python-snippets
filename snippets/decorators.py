@@ -136,6 +136,27 @@ def adapt_single(ele_name):
     return wrapper
 
 
+def retry(retry_num, wait_time, level=logging.INFO):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            num_left = retry_num
+
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if num_left == 0:
+                        raise e
+                    time.sleep(wait_time)
+                    logger.log(
+                        level, f'retry {func.__name__}, {num_left} retry left')
+                    num_left -= 1
+        return wrapped
+    return wrapper
+
+
+# 线程池批量跑function
 def batch_process(work_num, return_list=False):
     def wrapper(func):
         @wraps(func)
