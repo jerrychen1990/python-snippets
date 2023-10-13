@@ -1,3 +1,5 @@
+echo "run ut"
+bash run_ut.sh
 echo "build package"
 python setup.py sdist bdist_wheel
 echo "upload package"

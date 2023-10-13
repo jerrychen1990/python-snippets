@@ -12,23 +12,25 @@ import inspect
 import logging
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
-from typing import Generator, Iterable, List, Tuple
+from typing import Generator, Iterable, List, Tuple, Union
 
 from tqdm import tqdm
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+from snippets.utils import jload
+
+default_logger = logging.getLogger(__file__)
+default_logger.setLevel(logging.DEBUG)
 
 
 # 输出function执行耗时的函数
-def log_cost_time(name=None, level=logging.INFO, star_len=0):
+def log_cost_time(name=None, level=logging.INFO, logger=None, star_len=0):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
             with LogCostContext(name=name if name else func.__name__,
-                                level=level, star_len=star_len):
+                                level=level, star_len=star_len, logger=logger):
                 res = func(*args, **kwargs)
             return res
 
@@ -38,16 +40,17 @@ def log_cost_time(name=None, level=logging.INFO, star_len=0):
 
 
 class LogCostContext(object):
-    def __init__(self, name, level=logging.INFO, star_len=0):
+    def __init__(self, name, level=logging.INFO, logger=None, star_len=0):
         self.name = name
         self.level = level
         self.star_len = star_len
+        self.logger = logger if logger else default_logger
 
     def __enter__(self):
         msg = f"{self.name} starts"
         half_star_len = max((self.star_len - len(msg)) // 2, 0)
         msg = "*" * half_star_len + msg + "*" * half_star_len
-        logger.log(msg=msg, level=self.level)
+        self.logger.log(msg=msg, level=self.level)
         self.st = time.time()
 
     def __exit__(self, type, value, traceback):
@@ -55,7 +58,7 @@ class LogCostContext(object):
         msg = f"{self.name} ends, cost:{cost:4.3f} seconds"
         half_star_len = max((self.star_len - len(msg)) // 2, 0)
         msg = "*" * half_star_len + msg + "*" * half_star_len
-        logger.log(msg=msg, level=self.level)
+        self.logger.log(msg=msg, level=self.level)
 
 
 # 执行函数时输出函数的参数以及返回值
@@ -68,12 +71,12 @@ def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
                 if exclude_self and len(args) > 1:
                     show_args = args[1:]
                 msg = f"call function:{func} with\n args:{show_args}\n kwargs:{kwargs}"
-                logger.log(level=input_level, msg=msg)
+                default_logger.log(level=input_level, msg=msg)
 
             res = func(*args, **kwargs)
             if result_level:
                 msg = f"function:{func} return with:\n{res}"
-                logger.log(level=result_level, msg=msg)
+                default_logger.log(level=result_level, msg=msg)
             return res
 
         return wrapped_func
@@ -149,7 +152,7 @@ def retry(retry_num, wait_time, level=logging.INFO):
                     if num_left == 0:
                         raise e
                     time.sleep(wait_time)
-                    logger.log(
+                    default_logger.log(
                         level, f'retry {func.__name__}, {num_left} retry left')
                     num_left -= 1
         return wrapped
@@ -173,3 +176,15 @@ def batch_process(work_num, return_list=False):
             return rs
         return wrapped
     return wrapper
+
+
+class ConfigMixin:
+    @classmethod
+    def from_config(cls, config: Union[dict, str]):
+        if isinstance(config, str):
+            if config.endswith(".json"):
+                config = jload(config)
+            else:
+                raise ValueError(f"{config} is not a valid config file")
+        instance = cls(**config)
+        return instance

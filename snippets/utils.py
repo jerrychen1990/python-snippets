@@ -17,7 +17,8 @@ import re
 import subprocess
 import time
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Sequence, Tuple, _GenericAlias
+import pandas as pd
+from typing import Any, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # 创建一个目录
 def create_dir_path(path: str):
-    dir_path = os.path.dirname(path)
+    dir_path = os.path.abspath(os.path.dirname(path))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
@@ -110,6 +111,11 @@ def jload(fp):
     return rs
 
 
+def split_surfix(filename: str) -> Tuple[str, str]:
+    name, ext = filename.rsplit(".", 1)
+    return name, ext
+
+
 # 将$s的内容load成一个json对象。
 def jloads(s: str):
     return json.loads(s, object_hook=as_python_object)
@@ -145,8 +151,21 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
         return gen
     return list(gen)
 
+# table类的文件转化为list of dict
+
+
+def table2json(path):
+    if path.endswith("csv"):
+        df = pd.read_csv(path)
+    if path.endswith("xlsx"):
+        df = pd.read_excel(path)
+    df.replace(np.nan, None, inplace=True)
+    records = df.to_dict(orient="records")
+    return records
 
 # 一行一行地读取文件内容
+
+
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
         fp = open(fp, mode="r", encoding="utf8")
@@ -155,6 +174,21 @@ def load_lines(fp, return_generator=False):
         if return_generator:
             return (e.strip() for e in lines if e)
         return [e.strip() for e in lines if e]
+
+
+def read2list(file_path: str, **kwargs) -> List[Union[str, dict]]:
+    name, surfix = split_surfix(file_path)
+    if surfix == ".json":
+        return jloads(file_path, **kwargs)
+    if surfix == ".jsonl":
+        return jload_lines(file_path, **kwargs)
+    if surfix in ["xlsx", "csv"]:
+        return table2json(file_path)
+    if surfix in ["txt"]:
+        return load_lines(file_path, **kwargs)
+    else:
+        logger.warn(f"unkown surfix:{surfix}, read as txt")
+        return load_lines(file_path, **kwargs)
 
 
 # 递归将obj中的float做精度截断
@@ -248,9 +282,7 @@ def print_info(info, target_logger=None, fix_length=128):
     else:
         print(star_info)
 
-
-def get_cur_dir():
-    return os.path.abspath(os.path.dirname(__file__))
+# 把一个dict转化到一个Union类型
 
 
 def union_parse_obj(union: _GenericAlias, d: dict):
@@ -262,6 +294,8 @@ def union_parse_obj(union: _GenericAlias, d: dict):
             pass
     raise Exception(f"fail to convert {d} to union {union}")
 
+# 获取一个包的最新version
+
 
 def get_latest_version(package_name: str) -> str:
     cmd = f"pip install {package_name}=="
@@ -269,7 +303,7 @@ def get_latest_version(package_name: str) -> str:
     pattern = "\(from versions:(.*?)\)"
 
     for item in re.findall(pattern, output):
-        
+
         # item
         versions = [tuple(int(i) for i in e.strip().split("."))
                     for e in item.split(",")]
@@ -277,6 +311,8 @@ def get_latest_version(package_name: str) -> str:
         latest_version = max(versions)
         latest_version = ".".join(str(i) for i in latest_version)
         return latest_version
+
+# 获取一个version的下一个版本
 
 
 def get_next_version(version: str, level=0) -> str:

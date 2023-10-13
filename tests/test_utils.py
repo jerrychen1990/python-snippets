@@ -28,7 +28,7 @@ class TestUtils(unittest.TestCase):
         logger.info(g)
 
     def test_get_cur_dir(self):
-        cur_path = get_cur_dir()
+        cur_path = os.path.abspath(os.path.dirname(__file__))
         logger.info(cur_path)
 
     def test_union_parse(self):

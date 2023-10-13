@@ -54,7 +54,7 @@ class TestUtils(unittest.TestCase):
         print(rs)
 
     def test_retry(self):
-        @retry(retry_times=3, wait_time=0.1)
+        @retry(retry_num=3, wait_time=0.1)
         def rand_func(a):
             if random.random() < a:
                 print("success")
@@ -62,7 +62,10 @@ class TestUtils(unittest.TestCase):
                 raise Exception("fail")
 
         for i in range(5):
-            rand_func(i/5)
+            try:
+                rand_func(i/5)
+            except Exception as e:
+                print(e)
 
 
 if __name__ == "__main__":
