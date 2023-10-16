@@ -152,8 +152,6 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
     return list(gen)
 
 # table类的文件转化为list of dict
-
-
 def table2json(path):
     if path.endswith("csv"):
         df = pd.read_csv(path)
@@ -163,9 +161,24 @@ def table2json(path):
     records = df.to_dict(orient="records")
     return records
 
+
+# 将list数据存储成table格式
+def dump2table(data, path):
+    if isinstance(data, list):
+        data = pd.DataFrame.from_records(data)
+    assert isinstance(data, pd.DataFrame)
+    df = data
+    
+    if path.endswith(".csv"):
+        df.to_csv(path, index=False)
+    elif path.endswith(".xlsx"):
+        df.to_excel(path, index=False)
+    else:
+        raise Exception(f"Unknown file format: {path}")
+    
+
+
 # 一行一行地读取文件内容
-
-
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
         fp = open(fp, mode="r", encoding="utf8")
@@ -175,7 +188,7 @@ def load_lines(fp, return_generator=False):
             return (e.strip() for e in lines if e)
         return [e.strip() for e in lines if e]
 
-
+# 根据后缀名读取list数据
 def read2list(file_path: str, **kwargs) -> List[Union[str, dict]]:
     name, surfix = split_surfix(file_path)
     if surfix == ".json":
@@ -188,6 +201,22 @@ def read2list(file_path: str, **kwargs) -> List[Union[str, dict]]:
         return load_lines(file_path, **kwargs)
     else:
         logger.warn(f"unkown surfix:{surfix}, read as txt")
+        return load_lines(file_path, **kwargs)
+    
+
+# 将list数据按照后缀名格式dump到文件
+def dump_list(data:List, file_path: str, **kwargs):
+    name, surfix = split_surfix(file_path)
+    if surfix == ".json":
+        return jdump(data, file_path, **kwargs)
+    if surfix == ".jsonl":
+        return jdump_lines(data, file_path, **kwargs)
+    if surfix in ["xlsx", "csv"]:
+        return dump2table(data, file_path)
+    if surfix in ["txt"]:
+        return dump_lines(file_path, **kwargs)
+    else:
+        logger.warn(f"unkown surfix:{surfix}, dump as txt")
         return load_lines(file_path, **kwargs)
 
 

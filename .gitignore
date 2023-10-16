@@ -134,3 +134,4 @@ upload_package.sh
 
 test.ipynb
 tests/agi-tools.code-workspace
+.DS_Store

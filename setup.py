@@ -14,7 +14,7 @@ import sys
 
 from setuptools import find_packages, setup
 
-from snippets.utils import get_latest_version, get_next_version
+from snippets.utils import get_latest_version, get_next_version, read2list
 
 REQ = [
     "tqdm",
@@ -22,6 +22,11 @@ REQ = [
     "numpy",
     "click"
 ]
+
+def get_install_req():
+    req = read2list("requirements.txt")
+    return req
+
 
 
 if __name__ == "__main__":
@@ -32,7 +37,8 @@ if __name__ == "__main__":
         latest_version = get_latest_version(name)
         version = get_next_version(latest_version)
     print(f"version: {version}")
-
+    install_req = get_install_req()
+    print(f"install_req: {install_req}")
     setup(
         name=name,
         version=version,
