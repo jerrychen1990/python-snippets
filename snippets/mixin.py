@@ -6,7 +6,7 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
-from utils import jload
+from snippets.utils import jload
 from typing import Union
 
 

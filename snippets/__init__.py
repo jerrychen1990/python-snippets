@@ -9,11 +9,16 @@
 -------------------------------------------------
 """
 
-import imp
-from snippets.utils import *
-from snippets.decorators import *
-from snippets.logs import *
+import os
+SNIPPETS_ENV = os.environ.get("SNIPPETS_ENV", "prod")
+
+
 from snippets.perf import *
+from snippets.logs import *
+from snippets.decorators import *
+from snippets.utils import *
+from snippets.mixin import *
+from snippets.eval import *
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s",

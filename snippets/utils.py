@@ -158,6 +158,9 @@ def table2json(path):
     if path.endswith("xlsx"):
         df = pd.read_excel(path)
     df.replace(np.nan, None, inplace=True)
+    cols = df.columns.tolist()
+    cols = [e for e in cols if not e.startswith("Unnamed")]
+    df = df[cols]
     records = df.to_dict(orient="records")
     return records
 
