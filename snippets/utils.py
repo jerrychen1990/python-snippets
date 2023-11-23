@@ -152,6 +152,8 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
     return list(gen)
 
 # table类的文件转化为list of dict
+
+
 def table2json(path):
     if path.endswith("csv"):
         df = pd.read_csv(path)
@@ -171,14 +173,12 @@ def dump2table(data, path):
         data = pd.DataFrame.from_records(data)
     assert isinstance(data, pd.DataFrame)
     df = data
-    
     if path.endswith(".csv"):
         df.to_csv(path, index=False)
     elif path.endswith(".xlsx"):
         df.to_excel(path, index=False)
     else:
         raise Exception(f"Unknown file format: {path}")
-    
 
 
 # 一行一行地读取文件内容
@@ -192,35 +192,50 @@ def load_lines(fp, return_generator=False):
         return [e.strip() for e in lines if e]
 
 # 根据后缀名读取list数据
-def read2list(file_path: str, **kwargs) -> List[Union[str, dict]]:
-    name, surfix = split_surfix(file_path)
-    if surfix == ".json":
-        return jloads(file_path, **kwargs)
-    if surfix == ".jsonl":
-        return jload_lines(file_path, **kwargs)
-    if surfix in ["xlsx", "csv"]:
-        return table2json(file_path)
-    if surfix in ["txt"]:
-        return load_lines(file_path, **kwargs)
-    else:
-        logger.warn(f"unkown surfix:{surfix}, read as txt")
-        return load_lines(file_path, **kwargs)
+
+
+def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
     
+    def _read2list(file_path, **kwargs):
+
+        name, surfix = split_surfix(file_path)
+        if surfix == "json":
+            return jloads(file_path, **kwargs)
+        if surfix == "jsonl":
+            return jload_lines(file_path, **kwargs)
+        if surfix in ["xlsx", "csv"]:
+            return table2json(file_path)
+        if surfix in ["txt"]:
+            return load_lines(file_path, **kwargs)
+        else:
+            logger.warn(f"unkown surfix:{surfix}, read as txt")
+            return load_lines(file_path, **kwargs)
+        
+    if isinstance(file_path, list):
+        rs = []
+        for f in file_path:
+            logger.info(f"reading file_path={f}")
+            rs.extend(_read2list(f, **kwargs))
+        return rs   
+    else:
+        return _read2list(file_path=file_path, **kwargs)         
+
 
 # 将list数据按照后缀名格式dump到文件
-def dump_list(data:List, file_path: str, **kwargs):
+def dump_list(data: List, file_path: str, **kwargs):
+    create_dir_path(file_path)
     name, surfix = split_surfix(file_path)
-    if surfix == ".json":
+    if surfix == "json":
         return jdump(data, file_path, **kwargs)
-    if surfix == ".jsonl":
+    if surfix == "jsonl":
         return jdump_lines(data, file_path, **kwargs)
     if surfix in ["xlsx", "csv"]:
         return dump2table(data, file_path)
     if surfix in ["txt"]:
-        return dump_lines(file_path, **kwargs)
+        return dump_lines(data, file_path, **kwargs)
     else:
         logger.warn(f"unkown surfix:{surfix}, dump as txt")
-        return load_lines(file_path, **kwargs)
+        return dump_lines(data, file_path, **kwargs)
 
 
 # 递归将obj中的float做精度截断
