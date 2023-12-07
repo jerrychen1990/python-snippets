@@ -18,7 +18,7 @@ from snippets.logs import *
 from snippets.decorators import *
 from snippets.utils import *
 from snippets.mixin import *
-from snippets.eval import *
+from snippets.evaluate import *
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s",

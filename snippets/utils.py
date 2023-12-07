@@ -195,50 +195,54 @@ def load_lines(fp, return_generator=False):
 
 
 def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
-    
-    def _read2list(file_path, **kwargs):
 
-        name, surfix = split_surfix(file_path)
-        if surfix == "json":
-            return jloads(file_path, **kwargs)
-        if surfix == "jsonl":
+    def _read2list(file_path, **kwargs):
+        surfix = os.path.splitext(file_path)[-1].lower()
+        if surfix == ".json":
+            return jload(file_path, **kwargs)
+        if surfix == ".jsonl":
             return jload_lines(file_path, **kwargs)
-        if surfix in ["xlsx", "csv"]:
+        if surfix in [".xlsx", ".csv"]:
             return table2json(file_path)
-        if surfix in ["txt"]:
+        if surfix in [".txt"]:
             return load_lines(file_path, **kwargs)
         else:
             logger.warn(f"unkown surfix:{surfix}, read as txt")
             return load_lines(file_path, **kwargs)
-        
+
     if isinstance(file_path, list):
         rs = []
         for f in file_path:
             logger.info(f"reading file_path={f}")
             rs.extend(_read2list(f, **kwargs))
-        return rs   
+        return rs
     else:
-        return _read2list(file_path=file_path, **kwargs)         
+        return _read2list(file_path=file_path, **kwargs)
 
 
 # 将list数据按照后缀名格式dump到文件
-def dump_list(data: List, file_path: str, **kwargs):
+def dump2list(data: List, file_path: str, **kwargs):
     create_dir_path(file_path)
-    name, surfix = split_surfix(file_path)
-    if surfix == "json":
+    surfix = os.path.splitext(file_path)[-1].lower()
+    if surfix == ".json":
         return jdump(data, file_path, **kwargs)
-    if surfix == "jsonl":
+    if surfix == ".jsonl":
         return jdump_lines(data, file_path, **kwargs)
-    if surfix in ["xlsx", "csv"]:
+    if surfix in [".xlsx", ".csv"]:
         return dump2table(data, file_path)
-    if surfix in ["txt"]:
+    if surfix in [".txt"]:
         return dump_lines(data, file_path, **kwargs)
     else:
         logger.warn(f"unkown surfix:{surfix}, dump as txt")
         return dump_lines(data, file_path, **kwargs)
 
 
+dump_list = dump2list
+load2list = read2list
+
 # 递归将obj中的float做精度截断
+
+
 def pretty_floats(obj, r=4):
     if isinstance(obj, float):
         return round(obj, r)

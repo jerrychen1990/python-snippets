@@ -7,14 +7,10 @@
 '''
 
 
-from typing import List, Dict, Set, Sequence, Any
-import time
-import requests
 from snippets import *
 # from views.common import request_chatbot
 # from snippets import load_lines, batch_process
 import logging
-import click
 logger = logging.getLogger(__name__)
 
 
