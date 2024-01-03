@@ -7,6 +7,7 @@
 '''
 import logging
 import os
+from logging.handlers import TimedRotatingFileHandler
 
 
 logger = logging.getLogger(__name__)
@@ -62,8 +63,9 @@ def getlog_detail(name, level, format_type: str = "simple", do_print=True, do_fi
     if do_file:
         log_dir = log_dir or os.environ.get("LOG_DIR", "/tmp/logs")
         file_path = os.path.join(log_dir, name + ".log")
+        os.makedirs(log_dir, exist_ok=True)
         if file_type == "time_rotate":
-            filehandler = logging.handlers.TimedRotatingFileHandler(file_path, **file_config)
+            filehandler = TimedRotatingFileHandler(file_path, **file_config)
             filehandler.suffix = "%Y-%m-%d_%H-%M-%S.log"  # 设置历史文件 后缀
             filehandler.setFormatter(fmt)
             rs_logger.addHandler(filehandler)

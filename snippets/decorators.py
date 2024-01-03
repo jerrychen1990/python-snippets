@@ -170,7 +170,8 @@ def batch_process(work_num, return_list=False):
             def _func(x):
                 return func(x, *args, **kwargs)
             rs_iter = executors.map(_func, data)
-            rs = tqdm(rs_iter)
+            total = None if not hasattr(data, '__len__') else len(data)
+            rs = tqdm(rs_iter, total=total)
             if return_list:
                 return list(rs)
             return rs
