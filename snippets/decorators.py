@@ -167,7 +167,7 @@ def batch_process(work_num, return_list=False):
             # add a thread pool here
             executors = ThreadPoolExecutor(work_num)
 
-            def _func(x):
+            def _func(x):                
                 return func(x, *args, **kwargs)
             rs_iter = executors.map(_func, data)
             total = None if not hasattr(data, '__len__') else len(data)

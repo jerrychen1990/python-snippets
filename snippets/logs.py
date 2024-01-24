@@ -13,53 +13,60 @@ from logging.handlers import TimedRotatingFileHandler
 logger = logging.getLogger(__name__)
 
 
-def getlog(env, name):
+def getlog(env:str, name:str):
     exist = name in logging.Logger.manager.loggerDict
     rs_logger = logging.getLogger(name)
     if not exist:
         logger.info(f"create logger with {env=}, {name=}")
-        if env in ["dev", "local"]:
+        if env.lower() in ["dev", "local"]:
             rs_logger.propagate = False
             rs_logger.setLevel(logging.DEBUG)
-            streamHandler = logging.StreamHandler()
-            streamHandler.setFormatter(fmt=logging.Formatter(
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(fmt=logging.Formatter(
                 "%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s", datefmt='%Y-%m-%d %H:%M:%S'))
-            rs_logger.addHandler(streamHandler)
+            rs_logger.addHandler(stream_handler)
         else:
             rs_logger.propagate = False
             rs_logger.setLevel(logging.INFO)
-            streamHandler = logging.StreamHandler()
-            streamHandler.setFormatter(fmt=logging.Formatter(
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(fmt=logging.Formatter(
                 "%(asctime)s [%(levelname)s]%(message)s", datefmt='%Y-%m-%d-%H:%M:%S'))
-            rs_logger.addHandler(streamHandler)
+            rs_logger.addHandler(stream_handler)
 
     return rs_logger
 
+get_log = getlog
+
 
 _FMT_MAP = {
+    "raw": logging.Formatter("%(message)s"),
     "simple": logging.Formatter(
         "%(asctime)s [%(levelname)s]%(message)s", datefmt='%Y-%m-%d-%H:%M:%S'),
     "detail":   logging.Formatter(
         "%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s", datefmt='%Y-%m-%d %H:%M:%S')
+    
 
 }
 
 
-def getlog_detail(name, level, format_type: str = "simple", do_print=True, do_file=False, propagate=False,
-                  log_dir: str = None, file_type="time_rotate", file_config=dict(when='d', interval=1, backupCount=7)):
+def getlog_detail(name, level, format_type: str = "simple",
+                  do_print=True, print_format_type=None, print_level=None,
+                  do_file=False, file_format_type=None,  file_level = None, file_type="time_rotate", file_config=dict(when='d', interval=1, backupCount=7),
+                  propagate=False, log_dir: str = None,):
     exist = name in logging.Logger.manager.loggerDict
     rs_logger = logging.getLogger(name)
     if exist:
         return rs_logger
-    fmt = _FMT_MAP[format_type]
-
+    
     rs_logger.propagate = propagate
     rs_logger.setLevel(level)
 
     if do_print:
         streamHandler = logging.StreamHandler()
-        streamHandler.setFormatter(fmt=fmt)
+        streamHandler.setFormatter(fmt=_FMT_MAP[print_format_type if print_format_type else format_type])
+        streamHandler.setLevel(print_level if print_level else level)
         rs_logger.addHandler(streamHandler)
+        
     if do_file:
         log_dir = log_dir or os.environ.get("LOG_DIR", "/tmp/logs")
         file_path = os.path.join(log_dir, name + ".log")
@@ -67,6 +74,17 @@ def getlog_detail(name, level, format_type: str = "simple", do_print=True, do_fi
         if file_type == "time_rotate":
             filehandler = TimedRotatingFileHandler(file_path, **file_config)
             filehandler.suffix = "%Y-%m-%d_%H-%M-%S.log"  # 设置历史文件 后缀
-            filehandler.setFormatter(fmt)
+            filehandler.setFormatter(_FMT_MAP[file_format_type if file_format_type else format_type])
+            filehandler.setLevel(file_level if file_level else level)
             rs_logger.addHandler(filehandler)
     return rs_logger
+
+
+def get_file_log(name, log_dir):
+    return getlog_detail(name=name, format_type="simple",
+                         do_print=True, print_format_type="raw", print_level=logging.INFO,
+                         do_file=True, file_format_type="detail", file_level=logging.DEBUG, log_dir=log_dir)
+
+
+
+

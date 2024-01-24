@@ -42,7 +42,7 @@ class PythonObjectEncoder(json.JSONEncoder):
         if isinstance(obj, set):
             return list(obj)
         if isinstance(obj, BaseModel):
-            return obj.dict(exclude_none=True, exclude_defaults=True)
+            return obj.model_dump(exclude_none=True, exclude_defaults=True)
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%M-%d %H:%m:%S")
         if isinstance(obj, np.integer):
@@ -111,7 +111,7 @@ def jload(fp):
     return rs
 
 
-def split_surfix(filename: str) -> Tuple[str, str]:
+def split_suffix(filename: str) -> Tuple[str, str]:
     name, ext = filename.rsplit(".", 1)
     return name, ext
 
@@ -154,11 +154,11 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 # table类的文件转化为list of dict
 
 
-def table2json(path):
+def table2json(path, **kwargs):
     if path.endswith("csv"):
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, **kwargs)
     if path.endswith("xlsx"):
-        df = pd.read_excel(path)
+        df = pd.read_excel(path, **kwargs)
     df.replace(np.nan, None, inplace=True)
     cols = df.columns.tolist()
     cols = [e for e in cols if not e.startswith("Unnamed")]
@@ -197,17 +197,17 @@ def load_lines(fp, return_generator=False):
 def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
 
     def _read2list(file_path, **kwargs):
-        surfix = os.path.splitext(file_path)[-1].lower()
-        if surfix == ".json":
+        suffix = os.path.splitext(file_path)[-1].lower()
+        if suffix == ".json":
             return jload(file_path, **kwargs)
-        if surfix == ".jsonl":
+        if suffix == ".jsonl":
             return jload_lines(file_path, **kwargs)
-        if surfix in [".xlsx", ".csv"]:
-            return table2json(file_path)
-        if surfix in [".txt"]:
+        if suffix in [".xlsx", ".csv"]:
+            return table2json(file_path, **kwargs)
+        if suffix in [".txt"]:
             return load_lines(file_path, **kwargs)
         else:
-            logger.warn(f"unkown surfix:{surfix}, read as txt")
+            logger.warn(f"unknown suffix:{suffix}, read as txt")
             return load_lines(file_path, **kwargs)
 
     if isinstance(file_path, list):
