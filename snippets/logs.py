@@ -81,7 +81,7 @@ def getlog_detail(name, level, format_type: str = "simple",
 
 
 def get_file_log(name, log_dir):
-    return getlog_detail(name=name, format_type="simple",
+    return getlog_detail(name=name, format_type="simple", level=logging.DEBUG,
                          do_print=True, print_format_type="raw", print_level=logging.INFO,
                          do_file=True, file_format_type="detail", file_level=logging.DEBUG, log_dir=log_dir)
 

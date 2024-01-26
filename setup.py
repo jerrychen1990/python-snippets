@@ -21,6 +21,8 @@ REQ = [
     "pydantic",
     "numpy",
     "click"
+    "requests"
+    "pandas"
 ]
 
 def get_install_req():
