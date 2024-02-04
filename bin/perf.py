@@ -9,12 +9,11 @@
 import time
 import requests
 import logging
+from loguru import logger
 from snippets.decorators import batch_process
 from snippets.logs import getlog
 from snippets.utils import get_current_time_str, jdump, jload_lines
 import click
-
-logger  = getlog("prod", __file__)
 
 
 def default_build_req(item:dict)->dict:
@@ -46,16 +45,16 @@ def main(input_path,url,  work_num=1):
     logger.info(f"input_path: {input_path}, url:{url}, work_num:{work_num}")
     
     output_path = input_path.replace(".jsonl", f"{get_current_time_str}.pef{work_num}.jsonl")
-    querys = jload_lines(input_path)
+    queries = jload_lines(input_path)
     st = time.time()
-    querys = querys[:]
+    queries = queries[:]
 
     func = batch_process(work_num=work_num, return_list=True)(pef_test)
-    rs = func(data=querys, url=url)
+    rs = func(data=queries, url=url)
     # logger.info(rs)
     cost = time.time() - st
 
-    stat=dict(test_cost=cost, test_num=len(querys), qps=len(querys)/cost)
+    stat=dict(test_cost=cost, test_num=len(queries), qps=len(queries)/cost)
     rs.append(stat)
 
     logger.info(f"dump to {output_path}")

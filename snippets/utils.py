@@ -23,8 +23,9 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Un
 import numpy as np
 from pydantic import BaseModel
 from tqdm import tqdm
+from loguru import logger
 
-logger = logging.getLogger(__name__)
+
 
 
 # 创建一个目录

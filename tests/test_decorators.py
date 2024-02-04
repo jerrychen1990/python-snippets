@@ -8,7 +8,6 @@
    Description :
 -------------------------------------------------
 """
-import imp
 import random
 import unittest
 

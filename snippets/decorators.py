@@ -19,9 +19,13 @@ from typing import Generator, Iterable, List, Tuple, Union
 from tqdm import tqdm
 
 from snippets.utils import jload
+from loguru import logger as default_logger
 
-default_logger = logging.getLogger(__file__)
-default_logger.setLevel(logging.DEBUG)
+
+
+
+
+# default_logger.add(sys.stderr, level="INFO", format=fmt)
 
 
 # 输出function执行耗时的函数
@@ -50,7 +54,7 @@ class LogCostContext(object):
         msg = f"{self.name} starts"
         half_star_len = max((self.star_len - len(msg)) // 2, 0)
         msg = "*" * half_star_len + msg + "*" * half_star_len
-        self.logger.log(msg=msg, level=self.level)
+        self.logger.log(self.level, msg)
         self.st = time.time()
 
     def __exit__(self, type, value, traceback):
@@ -58,7 +62,7 @@ class LogCostContext(object):
         msg = f"{self.name} ends, cost:{cost:4.3f} seconds"
         half_star_len = max((self.star_len - len(msg)) // 2, 0)
         msg = "*" * half_star_len + msg + "*" * half_star_len
-        self.logger.log(msg=msg, level=self.level)
+        self.logger.log(self.level, msg)
 
 
 # 执行函数时输出函数的参数以及返回值
@@ -139,7 +143,7 @@ def adapt_single(ele_name):
     return wrapper
 
 
-def retry(retry_num, wait_time, level=logging.INFO):
+def retry(retry_num, wait_time, level="INFO"):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -152,8 +156,7 @@ def retry(retry_num, wait_time, level=logging.INFO):
                     if num_left == 0:
                         raise e
                     time.sleep(wait_time)
-                    default_logger.log(
-                        level, f'retry {func.__name__}, {num_left} retry left')
+                    default_logger.log(level, f'retry {func.__name__}, {num_left} retry left')
                     num_left -= 1
         return wrapped
     return wrapper

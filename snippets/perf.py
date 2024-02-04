@@ -2,13 +2,9 @@
 import os
 import time
 import requests
-from snippets import SNIPPETS_ENV
 from snippets.decorators import batch_process
-from snippets.logs import getlog
 from snippets.utils import create_dir_path, get_current_time_str, jdump, read2list, split_suffix
-
-
-logger = getlog(SNIPPETS_ENV, __file__)
+from loguru import logger
 
 
 def default_build_req(item: dict) -> dict:

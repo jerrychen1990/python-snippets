@@ -9,6 +9,8 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
+from zmq import Enum
+
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +46,21 @@ _FMT_MAP = {
         "%(asctime)s [%(levelname)s]%(message)s", datefmt='%Y-%m-%d-%H:%M:%S'),
     "detail":   logging.Formatter(
         "%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s", datefmt='%Y-%m-%d %H:%M:%S')
-    
-
 }
+
+
+class LoggingFormat(Enum):
+    RAW = logging.Formatter("%(message)s")
+    SIMPLE = logging.Formatter(
+        "%(asctime)s [%(levelname)s]%(message)s", datefmt='%Y-%m-%d-%H:%M:%S')
+    DETAIL=logging.Formatter(
+        "%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d]:%(message)s", datefmt='%Y-%m-%d %H:%M:%S')
+
+
+class LoguruFormat(str, Enum):
+    RAW = logging.Formatter("{message}")
+    SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level>|  - <level>{message}</level>"
+    DETAIL="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan>[<cyan>{function}</cyan>] - <level>{message}</level>"
 
 
 def getlog_detail(name, level, format_type: str = "simple",

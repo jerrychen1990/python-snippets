@@ -7,16 +7,9 @@
 '''
 
 
-from snippets import *
-# from views.common import request_chatbot
-# from snippets import load_lines, batch_process
-import logging
-logger = logging.getLogger(__name__)
-
+from snippets.utils import groupby
 
 # 计算f1
-
-
 def get_f1(precision, recall):
     f1 = 0. if precision + recall == 0 else 2 * \
         precision * recall / (precision + recall)

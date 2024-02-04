@@ -16,15 +16,6 @@ from setuptools import find_packages, setup
 
 from snippets.utils import get_latest_version, get_next_version, read2list
 
-REQ = [
-    "tqdm",
-    "pydantic",
-    "numpy",
-    "click"
-    "requests"
-    "pandas"
-]
-
 def get_install_req():
     req = read2list("requirements.txt")
     return req
@@ -44,7 +35,7 @@ if __name__ == "__main__":
     setup(
         name=name,
         version=version,
-        install_requires=REQ,
+        install_requires=install_req,
         packages=find_packages(exclude=['tests*']),
         package_dir={"": "."},
         package_data={},
