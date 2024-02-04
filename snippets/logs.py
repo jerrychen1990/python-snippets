@@ -58,7 +58,7 @@ class LoggingFormat(Enum):
 
 
 class LoguruFormat(str, Enum):
-    RAW = logging.Formatter("{message}")
+    RAW = "{message}"
     SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level>|  - <level>{message}</level>"
     DETAIL="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan>[<cyan>{function}</cyan>] - <level>{message}</level>"
 
