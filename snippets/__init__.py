@@ -10,7 +10,6 @@
 """
 
 import os
-SNIPPETS_ENV = os.environ.get("SNIPPETS_ENV", "prod")
 
 
 from snippets.perf import *
@@ -19,4 +18,7 @@ from snippets.decorators import *
 from snippets.utils import *
 from snippets.mixin import *
 from snippets.evaluate import *
-import os
+
+
+SNIPPETS_ENV = os.environ.get("SNIPPETS_ENV", "prod")
+logger = set_logger(SNIPPETS_ENV)

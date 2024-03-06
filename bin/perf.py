@@ -8,10 +8,8 @@
 
 import time
 import requests
-import logging
 from loguru import logger
 from snippets.decorators import batch_process
-from snippets.logs import getlog
 from snippets.utils import get_current_time_str, jdump, jload_lines
 import click
 

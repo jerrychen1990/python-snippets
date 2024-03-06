@@ -9,8 +9,8 @@
 -------------------------------------------------
 """
 import inspect
-import logging
 import os
+import random
 import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
@@ -22,14 +22,8 @@ from snippets.utils import jload
 from loguru import logger as default_logger
 
 
-
-
-
-# default_logger.add(sys.stderr, level="INFO", format=fmt)
-
-
 # 输出function执行耗时的函数
-def log_cost_time(name=None, level=logging.INFO, logger=None, star_len=0):
+def log_cost_time(name=None, level="INFO", logger=None, star_len=0):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -44,7 +38,7 @@ def log_cost_time(name=None, level=logging.INFO, logger=None, star_len=0):
 
 
 class LogCostContext(object):
-    def __init__(self, name, level=logging.INFO, logger=None, star_len=0):
+    def __init__(self, name, level="INFO", logger=None, star_len=0):
         self.name = name
         self.level = level
         self.star_len = star_len
@@ -142,8 +136,8 @@ def adapt_single(ele_name):
         return wrapped
     return wrapper
 
-
-def retry(retry_num, wait_time, level="INFO"):
+# 自动加上重试功能
+def retry(retry_num:int, wait_time:float|tuple[float,float], level="INFO"):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -155,8 +149,14 @@ def retry(retry_num, wait_time, level="INFO"):
                 except Exception as e:
                     if num_left == 0:
                         raise e
+                    if isinstance(wait_time, tuple):
+                        wt = random.uniform(wait_time[0], wait_time[1])
+                    else:
+                        wt = wait_time
+                        
+                        
+                    default_logger.log(level, f'retry {func.__name__}, {num_left} attempts left, sleep:{wt:2.3f} seconds')
                     time.sleep(wait_time)
-                    default_logger.log(level, f'retry {func.__name__}, {num_left} retry left')
                     num_left -= 1
         return wrapped
     return wrapper

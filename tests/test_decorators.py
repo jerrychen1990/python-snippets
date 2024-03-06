@@ -53,7 +53,7 @@ class TestUtils(unittest.TestCase):
         print(rs)
 
     def test_retry(self):
-        @retry(retry_num=3, wait_time=0.1)
+        @retry(retry_num=3, wait_time=(0.1,0.4))
         def rand_func(a):
             if random.random() < a:
                 print("success")
