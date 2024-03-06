@@ -10,7 +10,6 @@
 """
 import collections
 import json
-import logging
 import os
 import pickle
 import re
@@ -301,7 +300,7 @@ def flat(seq: Sequence[Iterable]) -> Iterable:
 
 # 将$seq序列聚合成dict。 key表示字典key生成的函数。 map_func表示字典value值的映射函数。
 # 返回的字典会根据value序列长度倒序排序
-def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x,
+def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x, reduce_func=None,
             sort_type="v_len", reverse=True) -> Dict[Any, List]:
     rs_dict = collections.defaultdict(list)
     for i in seq:
@@ -313,8 +312,9 @@ def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x,
         if sort_type == "k":
             return x[0]
         return 0
-
     items = sorted(rs_dict.items(), key=sort_func, reverse=reverse)
+    if reduce_func:
+        items = [(k, reduce_func(v)) for k, v in items]
     return collections.OrderedDict(items)
 
 

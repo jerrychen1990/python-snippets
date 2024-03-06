@@ -66,7 +66,7 @@ class LogCostContext(object):
 
 
 # 执行函数时输出函数的参数以及返回值
-def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
+def log_function_info(input_level="DEBUG", result_level="DEBUG",
                       exclude_self=True):
     def wrapper(func):
         def wrapped_func(*args, **kwargs):
@@ -75,12 +75,12 @@ def log_function_info(input_level=logging.DEBUG, result_level=logging.DEBUG,
                 if exclude_self and len(args) > 1:
                     show_args = args[1:]
                 msg = f"call function:{func} with\n args:{show_args}\n kwargs:{kwargs}"
-                default_logger.log(level=input_level, msg=msg)
+                default_logger.log(input_level, msg)
 
             res = func(*args, **kwargs)
             if result_level:
                 msg = f"function:{func} return with:\n{res}"
-                default_logger.log(level=result_level, msg=msg)
+                default_logger.log(result_level, msg)
             return res
 
         return wrapped_func

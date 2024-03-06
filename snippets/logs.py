@@ -5,11 +5,11 @@
 @Author  :   ChenHao
 @Contact :   jerrychen1990@gmail.com
 '''
+from enum import Enum
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from zmq import Enum
 
 
 logger = logging.getLogger(__name__)
@@ -60,8 +60,9 @@ class LoggingFormat(Enum):
 class LoguruFormat(str, Enum):
     RAW = "{message}"
     SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level>|  - <level>{message}</level>"
-    DETAIL="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan>[<cyan>{function}</cyan>] - <level>{message}</level>"
-
+    DETAIL="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> <level>{level: <8}</level> | <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{function}</cyan>] - <level>{message}</level>"
+    FILE_DETAIL="{time:YYYY-MM-DD HH:mm:ss.SSS} [{level: <8}] | {name}:{line}[{function}] - {message}"
+    
 
 def getlog_detail(name, level, format_type: str = "simple",
                   do_print=True, print_format_type=None, print_level=None,
