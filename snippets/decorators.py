@@ -14,11 +14,10 @@ import random
 import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
-from typing import Generator, Iterable, List, Tuple, Union
+from typing import Generator, Iterable, List, Tuple
 
 from tqdm import tqdm
 
-from snippets.utils import jload
 from loguru import logger as default_logger
 
 
@@ -145,6 +144,8 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
                     return func(*args, **kwargs)
                 except Exception as e:
                     if num_left == 0:
+                        default_logger.warning("no attempts left, throw exception")
+                        default_logger.exception(e)
                         raise e
                     if isinstance(wait_time, tuple):
                         wt = random.uniform(wait_time[0], wait_time[1])
@@ -152,7 +153,7 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
                         wt = wait_time
 
                     default_logger.log(level, f'retry {func.__name__}, {num_left} attempts left, sleep:{wt:2.3f} seconds')
-                    time.sleep(wait_time)
+                    time.sleep(wt)
                     num_left -= 1
         return wrapped
     return wrapper

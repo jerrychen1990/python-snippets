@@ -200,7 +200,7 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
         if suffix in [".txt"]:
             return load_lines(file_path, **kwargs)
         else:
-            logger.warn(f"unknown suffix:{suffix}, read as txt")
+            logger.warning(f"unknown suffix:{suffix}, read as txt")
             return load_lines(file_path, **kwargs)
 
     if isinstance(file_path, list):
@@ -216,17 +216,17 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
 # 将list数据按照后缀名格式dump到文件
 def dump2list(data: List, file_path: str, **kwargs):
     create_dir_path(file_path)
-    surfix = os.path.splitext(file_path)[-1].lower()
-    if surfix == ".json":
+    suffix = os.path.splitext(file_path)[-1].lower()
+    if suffix == ".json":
         return jdump(data, file_path, **kwargs)
-    if surfix == ".jsonl":
+    if suffix == ".jsonl":
         return jdump_lines(data, file_path, **kwargs)
-    if surfix in [".xlsx", ".csv"]:
+    if suffix in [".xlsx", ".csv"]:
         return dump2table(data, file_path)
-    if surfix in [".txt"]:
+    if suffix in [".txt"]:
         return dump_lines(data, file_path, **kwargs)
     else:
-        logger.warn(f"unkown surfix:{surfix}, dump as txt")
+        logger.warning(f"unknown suffix:{suffix}, dump as txt")
         return dump_lines(data, file_path, **kwargs)
 
 

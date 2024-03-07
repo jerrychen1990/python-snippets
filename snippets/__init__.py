@@ -21,4 +21,4 @@ from snippets.evaluate import *
 
 
 SNIPPETS_ENV = os.environ.get("SNIPPETS_ENV", "prod")
-logger = set_logger(SNIPPETS_ENV)
+logger = set_logger(SNIPPETS_ENV, __name__)
