@@ -36,7 +36,7 @@ def log_cost_time(name=None, level="INFO", logger=None, star_len=0):
 
     return wrapper
 
-
+# 输出执行时长的包装器
 class LogCostContext(object):
     def __init__(self, name, level="INFO", logger=None, star_len=0):
         self.name = name
@@ -62,6 +62,7 @@ class LogCostContext(object):
 # 执行函数时输出函数的参数以及返回值
 def log_function_info(input_level="DEBUG", result_level="DEBUG",
                       exclude_self=True):
+
     def wrapper(func):
         def wrapped_func(*args, **kwargs):
             if input_level:
@@ -88,9 +89,7 @@ def ensure_file_path(func):
     def wrapper(*args, **kwargs):
         path = kwargs['path']
         dir_path = os.path.dirname(path)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        return func(*args, **kwargs)
+        os.makedirs(dir_path, exist_ok=True)
 
     return wrapper
 
@@ -100,8 +99,7 @@ def ensure_dir_path(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         dir_path = kwargs['path']
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+        os.makedirs(dir_path, exist_ok=True)
         return func(*args, **kwargs)
 
     return wrapper
@@ -110,7 +108,6 @@ def ensure_dir_path(func):
 # 忽略过多的kwarg参数
 def discard_kwarg(func):
     arg_names = inspect.signature(func).parameters.keys()
-
     def wrap(*args, **kwargs):
         kwargs = {k: v for k, v in kwargs.items() if k in arg_names}
         return func(*args, **kwargs)
@@ -118,7 +115,7 @@ def discard_kwarg(func):
 
 
 # adapt function with single elements
-def adapt_single(ele_name):
+def adapt_single(ele_name:str):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -137,7 +134,7 @@ def adapt_single(ele_name):
     return wrapper
 
 # 自动加上重试功能
-def retry(retry_num:int, wait_time:float|tuple[float,float], level="INFO"):
+def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -153,8 +150,7 @@ def retry(retry_num:int, wait_time:float|tuple[float,float], level="INFO"):
                         wt = random.uniform(wait_time[0], wait_time[1])
                     else:
                         wt = wait_time
-                        
-                        
+
                     default_logger.log(level, f'retry {func.__name__}, {num_left} attempts left, sleep:{wt:2.3f} seconds')
                     time.sleep(wait_time)
                     num_left -= 1
@@ -170,7 +166,7 @@ def batch_process(work_num, return_list=False):
             # add a thread pool here
             executors = ThreadPoolExecutor(work_num)
 
-            def _func(x):                
+            def _func(x):
                 return func(x, *args, **kwargs)
             rs_iter = executors.map(_func, data)
             total = None if not hasattr(data, '__len__') else len(data)
@@ -180,15 +176,3 @@ def batch_process(work_num, return_list=False):
             return rs
         return wrapped
     return wrapper
-
-
-class ConfigMixin:
-    @classmethod
-    def from_config(cls, config: Union[dict, str]):
-        if isinstance(config, str):
-            if config.endswith(".json"):
-                config = jload(config)
-            else:
-                raise ValueError(f"{config} is not a valid config file")
-        instance = cls(**config)
-        return instance

@@ -25,8 +25,6 @@ from tqdm import tqdm
 from loguru import logger
 
 
-
-
 # 创建一个目录
 def create_dir_path(path: str):
     dir_path = os.path.abspath(os.path.dirname(path))
@@ -109,11 +107,6 @@ def jload(fp):
     with fp as fp:
         rs = json.load(fp, object_hook=as_python_object)
     return rs
-
-
-def split_suffix(filename: str) -> Tuple[str, str]:
-    name, ext = filename.rsplit(".", 1)
-    return name, ext
 
 
 # 将$s的内容load成一个json对象。
@@ -335,8 +328,6 @@ def print_info(info, target_logger=None, fix_length=128):
         print(star_info)
 
 # 把一个dict转化到一个Union类型
-
-
 def union_parse_obj(union: _GenericAlias, d: dict):
     for cls in union.__args__:
         try:
@@ -347,8 +338,6 @@ def union_parse_obj(union: _GenericAlias, d: dict):
     raise Exception(f"fail to convert {d} to union {union}")
 
 # 获取一个包的最新version
-
-
 def get_latest_version(package_name: str) -> str:
     cmd = f"pip install {package_name}=="
     status, output = execute_cmd(cmd)
@@ -365,8 +354,6 @@ def get_latest_version(package_name: str) -> str:
         return latest_version
 
 # 获取一个version的下一个版本
-
-
 def get_next_version(version: str, level=0) -> str:
     pieces = version.split(".")
     idx = len(pieces) - level - 1

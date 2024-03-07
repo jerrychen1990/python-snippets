@@ -1,9 +1,18 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@Time    :   2024/03/07 10:53:50
+@Author  :   ChenHao
+@Description  : snippets for perf test
+@Contact :   jerrychen1990@gmail.com
+'''
+
 
 import os
 import time
 import requests
 from snippets.decorators import batch_process
-from snippets.utils import create_dir_path, get_current_time_str, jdump, read2list, split_suffix
+from snippets.utils import create_dir_path, get_current_time_str, jdump, read2list
 from loguru import logger
 
 
@@ -30,7 +39,7 @@ def req_http_service_detail(item, url, build_req_func=default_build_req, build_r
 def perf_test(input_path, url, req_func, output_path=None, work_num=1, max_num=None):
     logger.info("perf starts")
     logger.info(f"input_path: {input_path}, url:{url}, work_num:{work_num}")
-    name, _ = split_suffix(input_path)
+    name, _ = os.path.splitext(input_path)
     if not output_path:
         output_path = os.path.join(
             name, f"{get_current_time_str()}.pef{work_num}.jsonl")

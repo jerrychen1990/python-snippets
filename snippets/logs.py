@@ -18,6 +18,15 @@ class LoguruFormat(str, Enum):
 
 
 def set_logger(env: str, log_dir=None):
+    """_summary_
+
+    Args:
+        env (str): environment: dev/test/prod
+        log_dir (_type_, optional): target log dir. Defaults to None.
+
+    Returns:
+        _type_: loguru logger
+    """
     from loguru import logger
     if 0 in logger._core.handlers:
         logger.remove(0)
