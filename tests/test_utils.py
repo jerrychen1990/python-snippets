@@ -52,3 +52,15 @@ class TestUtils(unittest.TestCase):
     def test_get_latest_version(self):
         latest_version = get_latest_version("python-snippets")
         print(latest_version)
+        
+    def test_deep_update(self):
+        origin = dict(a=1, b=dict(c=1), c="c")
+        to_update = dict(a=2, b=dict(e=2), c=dict(f="f"), k="k")
+        updated = deep_update(origin, to_update, inplace=False)
+        print(updated)
+        print(origin)
+        self.assertEquals(updated, {'a': 2, 'b': {'c': 1, 'e': 2}, 'c': {'f': 'f'}, 'k': 'k'})
+        self.assertEquals(origin, {'a': 1, 'b': {'c': 1}, 'c': 'c'})
+        
+        
+    

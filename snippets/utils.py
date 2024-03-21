@@ -9,6 +9,7 @@
 -------------------------------------------------
 """
 import collections
+import copy
 import json
 import os
 import pickle
@@ -161,7 +162,7 @@ def table2json(path, **kwargs):
 
 
 # 将list数据存储成table格式
-def dump2table(data, path):
+def dump2table(data, path:str):
     if isinstance(data, list):
         data = pd.DataFrame.from_records(data)
     assert isinstance(data, pd.DataFrame)
@@ -232,6 +233,9 @@ def dump2list(data: List, file_path: str, **kwargs):
 
 dump_list = dump2list
 load2list = read2list
+
+dump = dump2list
+load = read2list
 
 # 递归将obj中的float做精度截断
 
@@ -344,6 +348,8 @@ def get_latest_version(package_name: str) -> str:
     pattern = "\(from versions:(.*?)\)"
 
     for item in re.findall(pattern, output):
+        if item is None:
+            return "0.0.1"
 
         # item
         versions = [tuple(int(i) for i in e.strip().split("."))
@@ -363,3 +369,35 @@ def get_next_version(version: str, level=0) -> str:
     else:
         pieces[idx] = str(int(val)+1)
     return ".".join(pieces)
+
+
+
+def deep_update(origin:dict, new_data:dict, inplace=True)->dict:
+    """递归跟新dict
+
+    Args:
+        origin (dict): 原始dict
+        new_data (dict): 需要更新的数据
+        inplace (bool, optional): 是否在原dict上直接修改. Defaults to True.
+
+    Returns:
+        dict: 更新后的dict
+    """
+    to_update = origin if inplace else copy.deepcopy(origin)
+    
+    def _deep_update_inplace(tu:dict, nd:dict)->dict:
+        for k,v in nd.items():
+            if k not in to_update:
+                tu[k] = v
+            else:
+                if isinstance(v, dict) and isinstance(to_update[k], dict):
+                    _deep_update_inplace(to_update[k], v)
+                else:
+                    tu[k] =v
+        return tu            
+    return _deep_update_inplace(to_update, new_data)
+    
+        
+            
+    
+    
