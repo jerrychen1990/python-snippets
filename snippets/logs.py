@@ -82,10 +82,10 @@ class ChangeLogLevelContext(object):
         if self.handler and self.level:
             self.old_level = self.handler._levelno
             level_no = logger.level(self.level).no
-            print(f"set log level :{level_no}")
+            # print(f"set log level :{level_no}")
             self.handler._levelno = level_no
 
     def __exit__(self, type, value, traceback):
         if self.handler and self.old_level:
-            print(f"restore log level :{self.old_level}")
+            # print(f"restore log level :{self.old_level}")
             self.handler._levelno = self.old_level
