@@ -12,13 +12,13 @@ import inspect
 import os
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import wraps
 from typing import Generator, Iterable, List, Tuple
 
-from tqdm import tqdm
 
 from loguru import logger as default_logger
+from tqdm import tqdm
 
 
 # 输出function执行耗时的函数
@@ -160,20 +160,52 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
 
 
 # 线程池批量跑function
-def batch_process(work_num, return_list=False):
+def multi_thread(work_num, return_list=False, use_process=False):
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable, *args, **kwargs):
-            # add a thread pool here
-            executors = ThreadPoolExecutor(work_num)
-
             def _func(x):
                 return func(x, *args, **kwargs)
-            rs_iter = executors.map(_func, data)
-            total = None if not hasattr(data, '__len__') else len(data)
-            rs = tqdm(rs_iter, total=total)
+            with ThreadPoolExecutor(work_num) as executors:
+                rs_iter = executors.map(_func, data)
+                rs = rs_iter
+                total = None if not hasattr(data, '__len__') else len(data)
+                rs = tqdm(rs_iter, total=total)
             if return_list:
                 return list(rs)
             return rs
         return wrapped
     return wrapper
+
+batch_process = multi_thread
+
+# 多进程不可以使用内部定义的function
+def multi_process(work_num,  return_list=False):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(data: Iterable):
+            with ProcessPoolExecutor(work_num) as executors:
+                rs_iter = executors.map(func, data)
+                rs = rs_iter
+                total = None if not hasattr(data, '__len__') else len(data)
+                rs = tqdm(rs_iter, total=total)
+            if return_list:
+                return list(rs)
+            return rs
+        return wrapped
+    return wrapper
+
+
+
+
+if __name__ == "__main__":
+    work_num = 4
+    executors = ProcessPoolExecutor(work_num)
+    def add1(a):
+        print(f"process {a}")
+        return a + 1
+    with executors:
+        rs_iter = executors.map(add1, range(10))
+        for e in rs_iter:
+            print(e)
+
