@@ -20,6 +20,10 @@ def add(a, b=1, sleep=False):
 
     return a+b
 
+def sleep_with_add(a):
+    return add(a, sleep=True)
+    
+
 
 class TestUtils(unittest.TestCase):
     def test_adapt_single(self):
@@ -61,7 +65,7 @@ class TestUtils(unittest.TestCase):
         self.assertListEqual([3, 4, 5, 6, 7, 8, 9, 10, 11,12], rs_list)
         
     def test_multi_process(self):
-        process_batch_fn = batch_process(work_num=4, return_list=True)(add)
+        process_batch_fn = multi_process(work_num=4, return_list=True)(sleep_with_add)
         rs = process_batch_fn(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         print(rs)
         self.assertListEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], rs)

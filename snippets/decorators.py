@@ -15,6 +15,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import wraps
 from typing import Generator, Iterable, List, Tuple
+from venv import logger
 
 
 from loguru import logger as default_logger
@@ -160,20 +161,33 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
 
 
 # 线程池批量跑function
-def multi_thread(work_num, return_list=False, use_process=False):
+def multi_thread(work_num, return_list=False, safe_execute=True):
+    """多线程跑某个function的装饰器
+    Args:
+        work_num (_type_): 线程数
+        return_list (bool, optional): 结果是否返回list. Defaults to False.
+        safe_execute (bool, optional): 是不是catch住function中的exception并返回None. Defaults to True.
+    """
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable, *args, **kwargs):
             def _func(x):
-                return func(x, *args, **kwargs)
-            with ThreadPoolExecutor(work_num) as executors:
-                rs_iter = executors.map(_func, data)
-                rs = rs_iter
-                total = None if not hasattr(data, '__len__') else len(data)
-                rs = tqdm(rs_iter, total=total)
-            if return_list:
-                return list(rs)
-            return rs
+                try:
+                    return func(x, *args, **kwargs)
+                except Exception as e:
+                    if safe_execute:
+                        logger.warning(f"function {func.__name__} failed with exception")
+                        return None
+                    else:
+                        raise e
+            
+            executors = ThreadPoolExecutor(work_num)
+            rs_iter = executors.map(_func, data)
+            total = None if not hasattr(data, '__len__') else len(data)
+            rs_iter = tqdm(rs_iter, total=total)
+            rs_iter = (e for e in rs_iter if e is not None)            
+
+            return list(rs_iter) if return_list else rs_iter
         return wrapped
     return wrapper
 
@@ -184,14 +198,13 @@ def multi_process(work_num,  return_list=False):
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable):
-            with ProcessPoolExecutor(work_num) as executors:
-                rs_iter = executors.map(func, data)
-                rs = rs_iter
-                total = None if not hasattr(data, '__len__') else len(data)
-                rs = tqdm(rs_iter, total=total)
-            if return_list:
-                return list(rs)
-            return rs
+            executors = ProcessPoolExecutor(work_num)
+            rs_iter = executors.map(func, data)
+            rs = rs_iter
+            total = None if not hasattr(data, '__len__') else len(data)
+            rs_iter = tqdm(rs_iter, total=total)
+            return list(rs_iter) if return_list else rs
+
         return wrapped
     return wrapper
 
