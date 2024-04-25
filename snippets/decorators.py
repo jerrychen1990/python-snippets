@@ -177,6 +177,7 @@ def multi_thread(work_num, return_list=False, safe_execute=True):
                 except Exception as e:
                     if safe_execute:
                         logger.warning(f"function {func.__name__} failed with exception")
+                        logger.exception(e)
                         return None
                     else:
                         raise e

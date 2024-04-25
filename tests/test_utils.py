@@ -62,5 +62,10 @@ class TestUtils(unittest.TestCase):
         self.assertEquals(updated, {'a': 2, 'b': {'c': 1, 'e': 2}, 'c': {'f': 'f'}, 'k': 'k'})
         self.assertEquals(origin, {'a': 1, 'b': {'c': 1}, 'c': 'c'})
         
+
+    def test_load(self):
+        data = load("data/sample.*")
+        print(len(data))
+        self.assertEquals(len(data), 6)
         
     

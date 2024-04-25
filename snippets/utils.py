@@ -10,6 +10,7 @@
 """
 import collections
 import copy
+import glob
 import json
 import os
 import pickle
@@ -203,15 +204,15 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
         else:
             logger.warning(f"unknown suffix:{suffix}, read as txt")
             return load_lines(file_path, **kwargs)
+    if isinstance(file_path, str):
+        file_path = glob.glob(file_path) if "*" in file_path else [file_path]
 
-    if isinstance(file_path, list):
-        rs = []
-        for f in file_path:
-            logger.info(f"reading file_path={f}")
-            rs.extend(_read2list(f, **kwargs))
-        return rs
-    else:
-        return _read2list(file_path=file_path, **kwargs)
+    rs = []
+    for f in file_path:
+        logger.info(f"reading file_path={f}")
+        rs.extend(_read2list(f, **kwargs))
+    return rs
+
 
 
 # 将list数据按照后缀名格式dump到文件
@@ -251,7 +252,16 @@ def pretty_floats(obj, r=4):
 
 
 # 将data batch化输出
-def get_batched_data(data: Sequence, batch_size: int):
+def get_batched_data(data: Iterable, batch_size: int)->Iterable[List]:
+    """将数据按照batch_size分组
+
+    Args:
+        data (Iterable): 待分组数据
+        batch_size (int): 分组大小
+
+    Yields:
+        _type_: batch数据
+    """
     batch = []
     for item in data:
         batch.append(item)
