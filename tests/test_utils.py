@@ -67,5 +67,7 @@ class TestUtils(unittest.TestCase):
         data = load("data/sample.*")
         print(len(data))
         self.assertEquals(len(data), 6)
+        data = load("/Users/chenhao/workspace/XAgents/knowledge_base/test_service/config.json")
+        print(data)
         
     

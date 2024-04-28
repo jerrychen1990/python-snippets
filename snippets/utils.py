@@ -210,7 +210,14 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
     rs = []
     for f in file_path:
         logger.info(f"reading file_path={f}")
-        rs.extend(_read2list(f, **kwargs))
+        tmp = _read2list(f, **kwargs)
+        if isinstance(tmp, list):
+            rs.extend(tmp)
+        else:
+            rs.append(tmp)
+    if len(file_path) == 1 and len(rs)==1 and file_path[0].endswith(".json"):
+        rs = rs[0]            
+
     return rs
 
 
