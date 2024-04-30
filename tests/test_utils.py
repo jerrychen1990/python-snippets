@@ -52,7 +52,7 @@ class TestUtils(unittest.TestCase):
     def test_get_latest_version(self):
         latest_version = get_latest_version("python-snippets")
         print(latest_version)
-        
+
     def test_deep_update(self):
         origin = dict(a=1, b=dict(c=1), c="c")
         to_update = dict(a=2, b=dict(e=2), c=dict(f="f"), k="k")
@@ -61,7 +61,6 @@ class TestUtils(unittest.TestCase):
         print(origin)
         self.assertEquals(updated, {'a': 2, 'b': {'c': 1, 'e': 2}, 'c': {'f': 'f'}, 'k': 'k'})
         self.assertEquals(origin, {'a': 1, 'b': {'c': 1}, 'c': 'c'})
-        
 
     def test_load(self):
         data = load("data/sample.*")
@@ -69,5 +68,11 @@ class TestUtils(unittest.TestCase):
         self.assertEquals(len(data), 6)
         data = load("/Users/chenhao/workspace/XAgents/knowledge_base/test_service/config.json")
         print(data)
-        
-    
+
+    def test_batch_process_with_save(self):
+        data = range(20)
+        def func(x): return (e**2 for e in x)
+        dist_path = "./batch_process_result.txt"
+        batch_process_with_save(data, func, dist_path, batch_size=6)
+        if os.path.exists(dist_path):
+            os.remove(dist_path)

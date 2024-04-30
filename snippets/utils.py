@@ -15,11 +15,12 @@ import json
 import os
 import pickle
 import re
+import shutil
 import subprocess
 import time
 from datetime import datetime
 import pandas as pd
-from typing import Any, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -75,7 +76,7 @@ def dump_lines(lines: List[str], fp):
     if isinstance(fp, str):
         fp = open(fp, mode="w", encoding="utf8")
     with fp:
-        lines = [e + "\n" for e in lines]
+        lines = [str(e) + "\n" for e in lines]
         fp.writelines(lines)
 
 
@@ -163,7 +164,7 @@ def table2json(path, **kwargs):
 
 
 # 将list数据存储成table格式
-def dump2table(data, path:str):
+def dump2table(data, path: str):
     if isinstance(data, list):
         data = pd.DataFrame.from_records(data)
     assert isinstance(data, pd.DataFrame)
@@ -215,11 +216,10 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
             rs.extend(tmp)
         else:
             rs.append(tmp)
-    if len(file_path) == 1 and len(rs)==1 and file_path[0].endswith(".json"):
-        rs = rs[0]            
+    if len(file_path) == 1 and len(rs) == 1 and file_path[0].endswith(".json"):
+        rs = rs[0]
 
     return rs
-
 
 
 # 将list数据按照后缀名格式dump到文件
@@ -259,7 +259,7 @@ def pretty_floats(obj, r=4):
 
 
 # 将data batch化输出
-def get_batched_data(data: Iterable, batch_size: int)->Iterable[List]:
+def get_batched_data(data: Iterable, batch_size: int) -> Iterable[List]:
     """将数据按照batch_size分组
 
     Args:
@@ -349,6 +349,8 @@ def print_info(info, target_logger=None, fix_length=128):
         print(star_info)
 
 # 把一个dict转化到一个Union类型
+
+
 def union_parse_obj(union: _GenericAlias, d: dict):
     for cls in union.__args__:
         try:
@@ -359,6 +361,8 @@ def union_parse_obj(union: _GenericAlias, d: dict):
     raise Exception(f"fail to convert {d} to union {union}")
 
 # 获取一个包的最新version
+
+
 def get_latest_version(package_name: str) -> str:
     cmd = f"pip install {package_name}=="
     status, output = execute_cmd(cmd)
@@ -377,6 +381,8 @@ def get_latest_version(package_name: str) -> str:
         return latest_version
 
 # 获取一个version的下一个版本
+
+
 def get_next_version(version: str, level=0) -> str:
     pieces = version.split(".")
     idx = len(pieces) - level - 1
@@ -388,8 +394,7 @@ def get_next_version(version: str, level=0) -> str:
     return ".".join(pieces)
 
 
-
-def deep_update(origin:dict, new_data:dict, inplace=True)->dict:
+def deep_update(origin: dict, new_data: dict, inplace=True) -> dict:
     """递归跟新dict
 
     Args:
@@ -401,20 +406,63 @@ def deep_update(origin:dict, new_data:dict, inplace=True)->dict:
         dict: 更新后的dict
     """
     to_update = origin if inplace else copy.deepcopy(origin)
-    
-    def _deep_update_inplace(tu:dict, nd:dict)->dict:
-        for k,v in nd.items():
+
+    def _deep_update_inplace(tu: dict, nd: dict) -> dict:
+        for k, v in nd.items():
             if k not in to_update:
                 tu[k] = v
             else:
                 if isinstance(v, dict) and isinstance(to_update[k], dict):
                     _deep_update_inplace(to_update[k], v)
                 else:
-                    tu[k] =v
-        return tu            
+                    tu[k] = v
+        return tu
     return _deep_update_inplace(to_update, new_data)
-    
-        
-            
-    
-    
+
+
+def delete_paths(paths: str | List[str]):
+    if isinstance(paths, str):
+        paths = [paths]
+    for path in paths:
+        try:
+            if os.path.isfile(path):  # Check if it's a file
+                os.remove(path)
+                # print(f"File {path} has been deleted.")
+            elif os.path.isdir(path):  # Check if it's a directory
+                shutil.rmtree(path)
+                # print(f"Directory {path} has been deleted.")
+            else:
+                pass
+                # print(f"No such file or directory: {path}")
+        except Exception as e:
+            raise e
+            # logger.exception("e")
+
+
+def batch_process_with_save(data: Iterable, func: Callable, file_path: str, batch_size: int, **kwargs):
+    """将数据按照指定函数dump到文件
+
+    Args:
+        data (Iterable): 待dump数据
+        func (Callable): dump函数
+        file_path (str): 文件路径
+        **kwargs: dump函数参数
+    """
+    stem, suffix = os.path.splitext(file_path)
+    history_files = glob.glob(f"{stem}-[0-9]*-[0-9]*.{suffix}")
+    acc = load(history_files)
+
+    logger.info(f"{len(acc)} history data loaded")
+    # logger.info(history_files)
+    data = data[len(acc):]
+
+    for idx, batch in enumerate(batchify(data, batch_size)):
+        batch_result = list(func(batch, **kwargs))
+        dump(batch_result, f"{stem}-{idx*batch_size}-{idx*batch_size+len(batch)}.{suffix}")
+        acc.extend(batch_result)
+
+    history_files = glob.glob(f"{stem}*.{suffix}")
+    delete_paths(history_files)
+
+    dump(acc, file_path)
+    # logger.info(history_files)
