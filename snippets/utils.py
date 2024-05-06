@@ -463,6 +463,7 @@ def batch_process_with_save(data: Iterable, func: Callable, file_path: str, batc
 
     history_files = glob.glob(f"{stem}*.{suffix}")
     delete_paths(history_files)
-
+    logger.info(f"dump {len(acc)} items to {file_path}")
     dump(acc, file_path)
+    return acc
     # logger.info(history_files)
