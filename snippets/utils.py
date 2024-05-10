@@ -53,7 +53,10 @@ class PythonObjectEncoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         else:
-            return super().default(obj)
+            try:
+                return str(obj)
+            except Exception as e:
+                return super().default(obj)
 
 
 # 将$obj转json string。默认ensure_ascii=False,并用indent=4展示

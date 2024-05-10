@@ -5,7 +5,7 @@
 @file: upload.py
 @time: 2022/8/8 18:30
 """
-import os.path
+import os
 import click
 
 SERVER_MAP = {
@@ -20,32 +20,37 @@ src_home = "/Users/chenhao"
 @click.option('--machine_name', '-m',  help='目标机器名称')
 @click.option('--dst_path', '-d', help='目标路径')
 @click.option('--tmp', '-t', is_flag=True, default=False, help='是否上传到临时目录')
-@click.argument('src_path')
-def upload(src_path, machine_name: str, dst_path=None, tmp=False):
+@click.argument('src_paths', nargs=-1, type=click.Path(exists=True))
+def upload(src_paths, machine_name: str, dst_path=None, tmp=False):
     """
     upload file of src_path to dst_path on hpc server
     if dst_path is not None, upload to dst_path
     default dst_path is the same as src_path, just replace the home dir
     if --tmp is set, upload to ${HOME}/tmp dir
     """
-    ip, port, user, home = SERVER_MAP[machine_name]
-    src_path = os.path.abspath(src_path)
+    print(f"{src_paths=} {machine_name=} {dst_path=} {tmp=}")
+    # src_paths = glob.glob(src_path)
+    for src_path in src_paths:
+        # print(f"{src_path=}")
+        ip, port, user, home = SERVER_MAP[machine_name]
+        src_path = os.path.abspath(src_path)
 
-    if not os.path.exists(src_path):
-        raise Exception(f"src path not exists: {src_path}")
-    # is_dir = os.path.isdir(src_path)
+        if not os.path.exists(src_path):
+            raise Exception(f"src path not exists: {src_path}")
+        # is_dir = os.path.isdir(src_path)
 
-    if not dst_path:
-        if not tmp:
-            dst_path = src_path.replace(src_home, home)
-        else:
-            file_name = os.path.basename(src_path)
-            dst_path = f"{home}/tmp/{file_name}"
+        if not dst_path:
+            if not tmp:
+                dst_path = src_path.replace(src_home, home)
+            else:
+                file_name = os.path.basename(src_path)
+                print(f"{file_name=}, {src_path=}")
+                dst_path = f"{home}/tmp/{file_name}"
 
-    cmd = f"rsync  -avz --progress -e 'ssh {'-p '+port if port else ''}' {src_path}  {user}@{ip}:{dst_path}"
+        cmd = f"rsync  -avz --progress -e 'ssh {'-p '+port if port else ''}' {src_path}  {user}@{ip}:{dst_path}"
 
-    click.echo(cmd)
-    os.system(cmd)
+        click.echo(cmd)
+        os.system(cmd)
 
 
 if __name__ == "__main__":

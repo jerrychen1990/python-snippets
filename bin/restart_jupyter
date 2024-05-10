@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
-echo "stopping service"
-ps aux | grep chenhao | grep jupyter |grep -v 'restart_jupyter' | grep -v 'grep' | awk '{print $2}' | xargs -t kill
-echo "starting service"
-nohup jupyter notebook >${LOG_HOME}/jupyter.log&
-echo "service started"
+  #!/usr/bin/env bash
+  echo "stopping service"
+  ps aux | grep chenhao | grep jupyter |grep -v 'restart_jupyter' | grep -v 'grep' | awk '{print $2}' | xargs -t kill
+  echo "starting service"
+  nohup /Users/chenhao/miniconda3/envs/jupyter/bin/jupyter lab >${LOG_HOME}/jupyter.log&
+  echo "service started"
+  tail -f ${LOG_HOME}/jupyter.log

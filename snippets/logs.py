@@ -15,13 +15,18 @@ class LoguruFormat(str, Enum):
     RAW = "{message}"
     SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level: <8}</level>] - <level>{message}</level>"
     DETAIL = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level: <8}</level>] - <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{name}</cyan>:<cyan>{function}</cyan>] - <level>{message}</level>"
+    PROCESS_DETAIL = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [{process.id}-{process.name}] [<level>{level: <8}</level>] - <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{name}</cyan>:<cyan>{function}</cyan>] - <level>{message}</level>"
+    PROCESS_SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [{process.id}-{process.name}] [<level>{level: <8}</level>] - <level>{message}</level>"
+
     FILE_DETAIL = "{time:YYYY-MM-DD HH:mm:ss.SSS} [{level: <8}] | {name}:{line}[{function}] - {message}"
+
+    PROCESS_FILE_DETAIL = "{time:YYYY-MM-DD HH:mm:ss.SSS} [{process.id}-{process.name}] [{level: <8}] | {name}:{line}[{function}] - {message}"
 
 
 handlers = dict()
 
 
-def set_logger(env: str, module_name: str, log_dir=None, log_path=None):
+def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_process=False, function_name: str = None):
     """_summary_
 
     Args:
@@ -35,21 +40,34 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None):
     logger.info(f"setting logger for {module_name=}, {env=}, {log_dir=}, {log_path=}")
     if 0 in logger._core.handlers:
         logger.remove(0)
-    fmt = LoguruFormat.DETAIL if env in ["dev", "local"] else LoguruFormat.SIMPLE
+    if show_process:
+        fmt = LoguruFormat.PROCESS_DETAIL if env in ["dev", "local"] else LoguruFormat.PROCESS_SIMPLE
+    else:
+        fmt = LoguruFormat.DETAIL if env in ["dev", "local"] else LoguruFormat.SIMPLE
     level = "DEBUG" if env in ["dev", "local"] else "INFO"
     retention = "7 days" if env in ["dev", "local"] else "30 days"
-    def filter(r): return module_name in r["name"]
-    handler_id = logger.add(sys.stdout, colorize=True, format=fmt, level=level, filter=filter)
+
+    def filter(r):
+        if module_name and module_name not in r["name"]:
+            return False
+        if function_name and function_name not in r["function"]:
+            return False
+        return True
+    handler_id = logger.add(sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
     handlers[f"{module_name}_stdout"] = handler_id
 
+    file_fmt = LoguruFormat.PROCESS_FILE_DETAIL if show_process else LoguruFormat.FILE_DETAIL
+
     if log_path:
-        logger.add(log_path, rotation="00:00", retention=retention, enqueue=True, backtrace=True, level=level, filter=filter)
+        logger.add(log_path, rotation="00:00", retention=retention, enqueue=True, backtrace=True, level=level, filter=filter, format=file_fmt)
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
         detail_log_path = os.path.join(log_dir, "detail.log")
-        logger.add(detail_log_path,  rotation="00:00", retention=retention, enqueue=True, backtrace=True, level="DEBUG", filter=filter)
+        logger.add(detail_log_path,  rotation="00:00", retention=retention, enqueue=True,
+                   backtrace=True, level="DEBUG", filter=filter, format=file_fmt)
         output_log_path = os.path.join(log_dir, "output.log")
-        logger.add(output_log_path,  rotation="00:00", retention=retention, enqueue=True, backtrace=True, level="INFO", filter=filter)
+        logger.add(output_log_path,  rotation="00:00", retention=retention, enqueue=True,
+                   backtrace=True, level="INFO", filter=filter, format=file_fmt)
     return logger
 
 
