@@ -53,8 +53,10 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_pro
         if function_name and function_name not in r["function"]:
             return False
         return True
-    handler_id = logger.add(sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
-    handlers[f"{module_name}_stdout"] = handler_id
+    std_key = f"{module_name}_stdout"
+    if not std_key in handlers:
+        handler_id = logger.add(sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
+        handlers[std_key] = handler_id
 
     file_fmt = LoguruFormat.PROCESS_FILE_DETAIL if show_process else LoguruFormat.FILE_DETAIL
 

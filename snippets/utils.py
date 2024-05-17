@@ -213,7 +213,7 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
 
     rs = []
     for f in file_path:
-        logger.info(f"reading file_path={f}")
+        # logger.info(f"reading file_path={f}")
         tmp = _read2list(f, **kwargs)
         if isinstance(tmp, list):
             rs.extend(tmp)

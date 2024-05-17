@@ -8,6 +8,3 @@
    Description :
 -------------------------------------------------
 """
-
-from snippets.logs import set_logger
-set_logger()
