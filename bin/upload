@@ -9,8 +9,10 @@ import os
 import click
 
 SERVER_MAP = {
+    "prod": ("jumpserver.zphz.cn", "2222", "JMS-6611c264-4a45-4011-ae1a-a5b19cd65fb5", "/DATA/disk1/chenhao"),
+    "deploy": ("jumpserver.zphz.cn", "2222", "JMS-e2be0448-d5bb-448f-9406-72feeb2641d8", "/data/chenhao"),
     "hz4090": ("117.50.179.140", "1022", "root", "/home/bmm-system/data/chenhao"),
-    "deploy": ("117.50.174.44", "54444", "chenhao", "/data/chenhao"),
+
 }
 
 src_home = "/Users/chenhao"

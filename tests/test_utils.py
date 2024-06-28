@@ -67,6 +67,14 @@ class TestUtils(unittest.TestCase):
         print(len(data))
         self.assertEquals(len(data), 6)
 
+    def test_cache_load(self):
+        file_path = "data/sample.jsonl"
+        data = load_with_cache(file_path)
+        print(len(data))
+        self.assertEquals(len(data), 3)
+        data = load_with_cache(file_path)
+        print(len(data))
+
     def test_batch_process_with_save(self):
         data = range(20)
         def func(x): return (e**2 for e in x)

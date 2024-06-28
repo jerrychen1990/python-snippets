@@ -18,7 +18,9 @@ import re
 import shutil
 import subprocess
 import time
+
 from datetime import datetime
+from cachetools import LRUCache, cached
 import pandas as pd
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Union
 
@@ -247,6 +249,21 @@ load2list = read2list
 
 dump = dump2list
 load = read2list
+
+
+@cached(cache=LRUCache(10))
+def _load_with_cache(file_path, last_modified_time, **kwargs):
+    dt_object = datetime.fromtimestamp(last_modified_time)
+    last_modified_time = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    logger.debug(f"loading file:{file_path} with {last_modified_time=}, {kwargs=}")
+    data = load(file_path, **kwargs)
+    return data
+
+
+def load_with_cache(file_path, **kwargs):
+    last_modified_time = os.path.getmtime(file_path)
+    return _load_with_cache(file_path, last_modified_time, **kwargs)
+
 
 # 递归将obj中的float做精度截断
 
