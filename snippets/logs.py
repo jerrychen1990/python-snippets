@@ -37,7 +37,7 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_pro
         _type_: loguru logger
     """
     env = env.strip().lower()
-    logger.info(f"setting logger for {module_name=}, {env=}, {log_dir=}, {log_path=}")
+    # logger.info(f"setting logger for {module_name=}, {env=}, {log_dir=}, {log_path=}")
     if 0 in logger._core.handlers:
         logger.remove(0)
     if show_process:
@@ -53,23 +53,37 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_pro
         if function_name and function_name not in r["function"]:
             return False
         return True
-    std_key = f"{module_name}_stdout"
-    if not std_key in handlers:
-        handler_id = logger.add(sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
-        handlers[std_key] = handler_id
+
+    def _add_handler(key, *args, **kwargs):
+        if key in handlers:
+            logger.info(f"handler:{key} already exists")
+        else:
+            handler_id = logger.add(*args, **kwargs)
+            handlers[key] = handler_id
+        logger.info(f"add handler{handler_id} for {key}")
+
+    filter_key = module_name if module_name else function_name
+
+    std_key = f"{filter_key}_stdout_{level}"
+
+    _add_handler(std_key, sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
 
     file_fmt = LoguruFormat.PROCESS_FILE_DETAIL if show_process else LoguruFormat.FILE_DETAIL
 
     if log_path:
+        _add_handler(f"{filter_key}_file_{level}_{log_path}", log_path, rotation="00:00", retention=retention,
+                     enqueue=True, backtrace=True, level=level, filter=filter, format=file_fmt)
         logger.add(log_path, rotation="00:00", retention=retention, enqueue=True, backtrace=True, level=level, filter=filter, format=file_fmt)
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
         detail_log_path = os.path.join(log_dir, "detail.log")
-        logger.add(detail_log_path,  rotation="00:00", retention=retention, enqueue=True,
-                   backtrace=True, level="DEBUG", filter=filter, format=file_fmt)
+        _add_handler(f"{filter_key}_file_DEBUG_{detail_log_path}", detail_log_path,  rotation="00:00", retention=retention, enqueue=True,
+                     backtrace=True, level="DEBUG", filter=filter, format=file_fmt
+                     )
+
         output_log_path = os.path.join(log_dir, "output.log")
-        logger.add(output_log_path,  rotation="00:00", retention=retention, enqueue=True,
-                   backtrace=True, level="INFO", filter=filter, format=file_fmt)
+        _add_handler(f"{filter_key}_file_INFO_{output_log_path}", output_log_path,  rotation="00:00", retention=retention, enqueue=True,
+                     backtrace=True, level="INFO", filter=filter, format=file_fmt)
     return logger
 
 
