@@ -389,7 +389,8 @@ def get_latest_version(package_name: str) -> str:
     pattern = "\(from versions:(.*?)\)"
 
     for item in re.findall(pattern, output):
-        if item is None:
+        item = item.strip()
+        if not item or item == "none":
             return "0.0.1"
 
         # item

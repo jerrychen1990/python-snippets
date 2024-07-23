@@ -43,13 +43,15 @@ def upload(src_paths, machine_name: str, dst_path=None, tmp=False):
 
         if not dst_path:
             if not tmp:
-                dst_path = src_path.replace(src_home, home)
+                _dst_path = src_path.replace(src_home, home)
             else:
                 file_name = os.path.basename(src_path)
-                print(f"{file_name=}, {src_path=}")
-                dst_path = f"{home}/tmp/{file_name}"
+                # print(f"{file_name=}, {src_path=}")
+                _dst_path = f"{home}/tmp/{file_name}"
+        else:
+            _dst_path = dst_path
 
-        cmd = f"rsync  -avz --progress -e 'ssh {'-p '+port if port else ''}' {src_path}  {user}@{ip}:{dst_path}"
+        cmd = f"rsync  -avz --progress -e 'ssh {'-p '+port if port else ''}' '{src_path}'  '{user}@{ip}:{_dst_path}'"
 
         click.echo(cmd)
         os.system(cmd)

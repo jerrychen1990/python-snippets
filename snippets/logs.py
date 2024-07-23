@@ -55,12 +55,14 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_pro
         return True
 
     def _add_handler(key, *args, **kwargs):
+        # logger.info(f"search {key} for {handlers.keys()}")
+        # print(logger._core.handlers)
         if key in handlers:
             logger.info(f"handler:{key} already exists")
         else:
             handler_id = logger.add(*args, **kwargs)
             handlers[key] = handler_id
-        logger.info(f"add handler{handler_id} for {key}")
+            logger.info(f"add handler{handler_id} for {key}")
 
     filter_key = module_name if module_name else function_name
 
