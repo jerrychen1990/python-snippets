@@ -13,16 +13,17 @@ import unittest
 
 from snippets.decorators import *
 
+
 def add(a, b=1, sleep=False):
     if sleep:
         print(f"sleep {a} seconds")
-        time.sleep(a)    
+        time.sleep(a)
 
     return a+b
 
+
 def sleep_with_add(a):
     return add(a, sleep=True)
-    
 
 
 class TestUtils(unittest.TestCase):
@@ -55,24 +56,35 @@ class TestUtils(unittest.TestCase):
 
         sleep_add(1, 2)
 
+    async def test_async_decorator(self):
+        def func(x):
+            return x**2
+        rs = func(4)
+        print(rs)
+        self.assertEqual(16, rs)
+
+        func = asyncify(func)
+        rs = await func(4)
+        print(rs)
+        self.assertEqual(16, rs)
+
     def test_multi_thread(self):
         fn = batch_process(work_num=2, return_list=False)(add)
         rs = fn(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], b=2, sleep=True)
-        rs_list=[]
+        rs_list = []
         for e in rs:
             print(e)
             rs_list.append(e)
-        self.assertListEqual([3, 4, 5, 6, 7, 8, 9, 10, 11,12], rs_list)
-        
+        self.assertListEqual([3, 4, 5, 6, 7, 8, 9, 10, 11, 12], rs_list)
+
     def test_multi_process(self):
         process_batch_fn = multi_process(work_num=4, return_list=True)(sleep_with_add)
         rs = process_batch_fn(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         print(rs)
         self.assertListEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], rs)
 
-
     def test_retry(self):
-        @retry(retry_num=3, wait_time=(0.1,0.4))
+        @retry(retry_num=3, wait_time=(0.1, 0.4))
         def rand_func(a):
             if random.random() < a:
                 print("success")
@@ -85,7 +97,8 @@ class TestUtils(unittest.TestCase):
             except Exception as e:
                 print(e)
 
+    # def test_multi_thread(self):
+
 
 if __name__ == '__main__':
     unittest.main()
-

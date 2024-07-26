@@ -8,6 +8,7 @@
    Description :
 -------------------------------------------------
 """
+from time import sleep
 import unittest
 from typing import Union
 
@@ -82,3 +83,16 @@ class TestUtils(unittest.TestCase):
         batch_process_with_save(data, func, dist_path, batch_size=6)
         if os.path.exists(dist_path):
             os.remove(dist_path)
+
+    def test_add_callback(self):
+        def origin_gen():
+            for i in range(10):
+                yield i
+                sleep(0.5)
+
+        def print_callback(x, joiner=""):
+            print(joiner.join([str(e) for e in x]))
+
+        gen = add_callback2gen(origin_gen(), print_callback, joiner=",")
+        for e in gen:
+            print(e)

@@ -15,10 +15,12 @@ class LoguruFormat(str, Enum):
     RAW = "{message}"
     SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level: <8}</level>] - <level>{message}</level>"
     DETAIL = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level: <8}</level>] - <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{name}</cyan>:<cyan>{function}</cyan>] - <level>{message}</level>"
+
     PROCESS_DETAIL = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [{process.id}-{process.name}] [<level>{level: <8}</level>] - <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{name}</cyan>:<cyan>{function}</cyan>] - <level>{message}</level>"
     PROCESS_SIMPLE = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [{process.id}-{process.name}] [<level>{level: <8}</level>] - <level>{message}</level>"
 
-    FILE_DETAIL = "{time:YYYY-MM-DD HH:mm:ss.SSS} [{level: <8}] | {name}:{line}[{function}] - {message}"
+    FILE_DETAIL = "{time:YYYY-MM-DD HH:mm:ss.SSS} [<level>{level: <8}</level>] - {file}:{line}[{name}:{function}] - <level>{message}</level>"
+    File_SIMPLE = "{time:YYYY-MM-DD HH:mm:ss.SSS} [<level>{level: <8}</level>] - <level>{message}</level>"
 
     PROCESS_FILE_DETAIL = "{time:YYYY-MM-DD HH:mm:ss.SSS} [{process.id}-{process.name}] [{level: <8}] | {name}:{line}[{function}] - {message}"
 
@@ -26,7 +28,7 @@ class LoguruFormat(str, Enum):
 handlers = dict()
 
 
-def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_process=False, function_name: str = None):
+def set_logger(env: str, module_name: str, std=True, log_dir=None, log_path=None, show_process=False, function_name: str = None):
     """_summary_
 
     Args:
@@ -65,10 +67,10 @@ def set_logger(env: str, module_name: str, log_dir=None, log_path=None, show_pro
             logger.info(f"add handler{handler_id} for {key}")
 
     filter_key = module_name if module_name else function_name
-
-    std_key = f"{filter_key}_stdout_{level}"
-
-    _add_handler(std_key, sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
+    
+    if std:
+        std_key = f"{filter_key}_stdout_{level}"
+        _add_handler(std_key, sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
 
     file_fmt = LoguruFormat.PROCESS_FILE_DETAIL if show_process else LoguruFormat.FILE_DETAIL
 

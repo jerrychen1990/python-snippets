@@ -8,6 +8,7 @@
    Description :
 -------------------------------------------------
 """
+import asyncio
 import inspect
 import os
 import random
@@ -15,7 +16,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import wraps
 from typing import Generator, Iterable, List, Tuple
-from venv import logger
 
 
 from loguru import logger as default_logger
@@ -37,6 +37,8 @@ def log_cost_time(name=None, level="INFO", logger=None, star_len=0):
     return wrapper
 
 # 输出执行时长的包装器
+
+
 class LogCostContext(object):
     def __init__(self, name, level="INFO", logger=None, star_len=0):
         self.name = name
@@ -64,22 +66,49 @@ def log_function_info(input_level="DEBUG", result_level="DEBUG",
                       exclude_self=True):
 
     def wrapper(func):
-        def wrapped_func(*args, **kwargs):
+        is_async = inspect.iscoroutinefunction(func)
+
+        def show_args(*args, **kwargs):
             if input_level:
                 show_args = args
                 if exclude_self and len(args) > 1:
                     show_args = args[1:]
-                msg = f"call function:{func} with\n args:{show_args}\n kwargs:{kwargs}"
-                default_logger.log(input_level, msg)
+                msg = f"call function:{func.__name__} with\nargs:{show_args}\nkwargs:{kwargs}"
+                default_logger.info(msg)
+                # default_logger.log(input_level, msg)
 
-            res = func(*args, **kwargs)
+        def show_result(res):
             if result_level:
-                msg = f"function:{func} return with:\n{res}"
+                msg = f"function:{func.__name__} return with:\n{res}"
                 default_logger.log(result_level, msg)
             return res
 
+        if is_async:
+            @wraps(func)
+            async def wrapped_func(*args, **kwargs):
+                show_args(*args, **kwargs)
+                res = await func(*args, **kwargs)
+                show_result(res)
+                return res
+        else:
+            @wraps(func)
+            def wrapped_func(*args, **kwargs):
+                show_args(*args, **kwargs)
+                res = func(*args, **kwargs)
+                show_result(res)
+                return res
         return wrapped_func
 
+    return wrapper
+
+# 将同步函数包装成异步
+
+
+def asyncify(sync_func):
+    @wraps(sync_func)
+    async def wrapper(*args, **kwargs):
+        # 将同步函数转为异步调用
+        return await asyncio.to_thread(sync_func, *args, **kwargs)
     return wrapper
 
 
@@ -108,6 +137,7 @@ def ensure_dir_path(func):
 # 忽略过多的kwarg参数
 def discard_kwarg(func):
     arg_names = inspect.signature(func).parameters.keys()
+
     def wrap(*args, **kwargs):
         kwargs = {k: v for k, v in kwargs.items() if k in arg_names}
         return func(*args, **kwargs)
@@ -115,7 +145,7 @@ def discard_kwarg(func):
 
 
 # adapt function with single elements
-def adapt_single(ele_name:str):
+def adapt_single(ele_name: str):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -134,6 +164,8 @@ def adapt_single(ele_name:str):
     return wrapper
 
 # 自动加上重试功能
+
+
 def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
     def wrapper(func):
         @wraps(func)
@@ -176,25 +208,28 @@ def multi_thread(work_num, return_list=False, safe_execute=True):
                     return func(x, *args, **kwargs)
                 except Exception as e:
                     if safe_execute:
-                        logger.warning(f"function {func.__name__} failed with exception")
-                        logger.exception(e)
+                        default_logger.warning(f"function {func.__name__} failed with exception")
+                        default_logger.exception(e)
                         return None
                     else:
                         raise e
-            
+
             executors = ThreadPoolExecutor(work_num)
             rs_iter = executors.map(_func, data)
             total = None if not hasattr(data, '__len__') else len(data)
             rs_iter = tqdm(rs_iter, total=total)
-            rs_iter = (e for e in rs_iter if e is not None)            
+            rs_iter = (e for e in rs_iter if e is not None)
 
             return list(rs_iter) if return_list else rs_iter
         return wrapped
     return wrapper
 
+
 batch_process = multi_thread
 
 # 多进程不可以使用内部定义的function
+
+
 def multi_process(work_num,  return_list=False):
     def wrapper(func):
         @wraps(func)
@@ -210,11 +245,10 @@ def multi_process(work_num,  return_list=False):
     return wrapper
 
 
-
-
 if __name__ == "__main__":
     work_num = 4
     executors = ProcessPoolExecutor(work_num)
+
     def add1(a):
         print(f"process {a}")
         return a + 1
@@ -222,4 +256,3 @@ if __name__ == "__main__":
         rs_iter = executors.map(add1, range(10))
         for e in rs_iter:
             print(e)
-

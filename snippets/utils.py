@@ -22,7 +22,7 @@ import time
 from datetime import datetime
 from cachetools import LRUCache, cached
 import pandas as pd
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, _GenericAlias, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Sequence, Tuple, _GenericAlias, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -62,8 +62,8 @@ class PythonObjectEncoder(json.JSONEncoder):
 
 
 # 将$obj转json string。默认ensure_ascii=False,并用indent=4展示
-def jdumps(obj: Any, encoder=PythonObjectEncoder) -> str:
-    return json.dumps(obj, ensure_ascii=False, indent=4, cls=encoder)
+def jdumps(obj: Any, encoder=PythonObjectEncoder, ensure_ascii=False, indent=4, **kwargs) -> str:
+    return json.dumps(obj, ensure_ascii=ensure_ascii, indent=indent, cls=encoder, **kwargs)
 
 
 # 将$obj转json string 写入$fp。$fp可以是一个文件路径，也可以是一个open函数打开的对象
@@ -488,3 +488,14 @@ def batch_process_with_save(data: Iterable, func: Callable, file_path: str, batc
     dump(acc, file_path)
     return acc
     # logger.info(history_files)
+
+
+def add_callback2gen(items: Iterator, callback: Callable, **kwargs) -> Iterator:
+    acc = []
+
+    def gen():
+        for item in items:
+            yield item
+            acc.append(item)
+        callback(acc, **kwargs)
+    return gen()
