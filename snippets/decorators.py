@@ -119,6 +119,8 @@ def ensure_file_path(func):
         path = kwargs['path']
         dir_path = os.path.dirname(path)
         os.makedirs(dir_path, exist_ok=True)
+        return func(*args, **kwargs)
+
 
     return wrapper
 
@@ -180,7 +182,7 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
                         default_logger.warning("no attempts left, throw exception")
                         default_logger.exception(e)
                         raise e
-                    if isinstance(wait_time, tuple):
+                    if isinstance(wait_time, tuple) or isinstance(wait_time, list):
                         wt = random.uniform(wait_time[0], wait_time[1])
                     else:
                         wt = wait_time

@@ -6,6 +6,7 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 from enum import Enum
+from functools import wraps
 import os
 import sys
 from loguru import logger
@@ -69,26 +70,27 @@ def set_logger(env: str, module_name: str, std=True, log_dir=None, log_path=None
     filter_key = module_name if module_name else function_name
     
     if std:
-        std_key = f"{filter_key}_stdout_{level}"
-        _add_handler(std_key, sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=True)
+        std_key = f"{filter_key}_stdout"
+        _add_handler(std_key, sys.stdout, colorize=True, format=fmt, level=level, filter=filter, enqueue=False)
 
     file_fmt = LoguruFormat.PROCESS_FILE_DETAIL if show_process else LoguruFormat.FILE_DETAIL
 
     if log_path:
         _add_handler(f"{filter_key}_file_{level}_{log_path}", log_path, rotation="00:00", retention=retention,
-                     enqueue=True, backtrace=True, level=level, filter=filter, format=file_fmt)
-        logger.add(log_path, rotation="00:00", retention=retention, enqueue=True, backtrace=True, level=level, filter=filter, format=file_fmt)
+                     enqueue=False, backtrace=True, level=level, filter=filter, format=file_fmt)
+        logger.add(log_path, rotation="00:00", retention=retention, enqueue=False, backtrace=True, level=level, filter=filter, format=file_fmt)
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
         detail_log_path = os.path.join(log_dir, "detail.log")
-        _add_handler(f"{filter_key}_file_DEBUG_{detail_log_path}", detail_log_path,  rotation="00:00", retention=retention, enqueue=True,
+        _add_handler(f"{filter_key}_file_DEBUG_{detail_log_path}", detail_log_path,  rotation="00:00", retention=retention, enqueue=False,
                      backtrace=True, level="DEBUG", filter=filter, format=file_fmt
                      )
 
         output_log_path = os.path.join(log_dir, "output.log")
-        _add_handler(f"{filter_key}_file_INFO_{output_log_path}", output_log_path,  rotation="00:00", retention=retention, enqueue=True,
+        _add_handler(f"{filter_key}_file_INFO_{output_log_path}", output_log_path,  rotation="00:00", retention=retention, enqueue=False,
                      backtrace=True, level="INFO", filter=filter, format=file_fmt)
     return logger
+
 
 
 def get_handler(module_name, sink_type):
@@ -127,3 +129,17 @@ class ChangeLogLevelContext(object):
         if self.handler and self.old_level:
             # print(f"restore log level :{self.old_level}")
             self.handler._levelno = self.old_level
+
+def change_log_level(module_name:str, sink_type:str, level:str=None):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            if not level:
+                res = func(*args, **kwargs)
+            else:
+                with ChangeLogLevelContext(module_name, sink_type, level):
+                    res = func(*args, **kwargs)
+            return res
+        return wrapped
+    return wrapper
+    
