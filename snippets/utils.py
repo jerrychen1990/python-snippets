@@ -222,8 +222,6 @@ def read2list(file_path: str | list, **kwargs) -> list[str | dict]:
             rs.extend(tmp)
         else:
             rs.append(tmp)
-    if len(file_path) == 1 and len(rs) == 1 and file_path[0].endswith(".json"):
-        rs = rs[0]
 
     return rs
 

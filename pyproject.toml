@@ -1,6 +1,6 @@
 [project]
 name = "python-snippets"
-version = "0.1.2"
+version = "0.1.3"
 description = "useful python snippets for jerry"
 requires-python = ">=3.10"
 dependencies = [
