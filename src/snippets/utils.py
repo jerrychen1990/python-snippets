@@ -8,6 +8,7 @@
    Description :
 -------------------------------------------------
 """
+
 import collections
 import copy
 import glob
@@ -18,16 +19,16 @@ import re
 import shutil
 import subprocess
 import time
-
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from datetime import datetime
-from cachetools import LRUCache, cached
-import pandas as pd
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Sequence, Tuple, _GenericAlias, Union
+from typing import Any, _GenericAlias, dict, list, tuple
 
 import numpy as np
+import pandas as pd
+from cachetools import LRUCache, cached
+from loguru import logger
 from pydantic import BaseModel
 from tqdm import tqdm
-from loguru import logger
 
 
 # 创建一个目录
@@ -57,7 +58,7 @@ class PythonObjectEncoder(json.JSONEncoder):
         else:
             try:
                 return str(obj)
-            except Exception as e:
+            except Exception:
                 return super().default(obj)
 
 
@@ -70,14 +71,14 @@ def jdumps(obj: Any, encoder=PythonObjectEncoder, ensure_ascii=False, indent=4, 
 def jdump(obj: Any, fp, encoder=PythonObjectEncoder):
     if isinstance(fp, str):
         create_dir_path(fp)
-        with open(fp, mode='w', encoding="utf8") as fp:
+        with open(fp, mode="w", encoding="utf8") as fp:
             json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
     else:
         json.dump(obj, fp, ensure_ascii=False, indent=4, cls=encoder)
 
 
 # 将一个string的列表写入文件，常用于构造schema文件
-def dump_lines(lines: List[str], fp):
+def dump_lines(lines: list[str], fp):
     if isinstance(fp, str):
         fp = open(fp, mode="w", encoding="utf8")
     with fp:
@@ -93,15 +94,14 @@ def jdump_lines(obj, fp, mode="w", progbar=False):
         fp = open(fp, mode=mode, encoding="utf8")
     with fp:
         for item in iter_obj:
-            line = json.dumps(item, ensure_ascii=False,
-                              cls=PythonObjectEncoder) + "\n"
+            line = json.dumps(item, ensure_ascii=False, cls=PythonObjectEncoder) + "\n"
             fp.write(line)
 
 
 # 将json string load成python object
 def as_python_object(dct):
-    if '_python_object' in dct:
-        python_value = dct['_python_object']
+    if "_python_object" in dct:
+        python_value = dct["_python_object"]
         if isinstance(python_value, str):
             python_value = eval(python_value)
         return pickle.loads(python_value)
@@ -111,7 +111,7 @@ def as_python_object(dct):
 # 将$fp的内容load成一个json对象。$fp可以是一个文件路径，也可以是一个open函数打开的对象
 def jload(fp):
     if isinstance(fp, str):
-        fp = open(fp, mode='r', encoding="utf8")
+        fp = open(fp, encoding="utf8")
     with fp as fp:
         rs = json.load(fp, object_hook=as_python_object)
     return rs
@@ -135,7 +135,7 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
 
     def get_gen(f):
         if isinstance(f, str):
-            f = open(f, mode='r', encoding="utf8")
+            f = open(f, encoding="utf8")
         idx = 0
         with f as f:
             for line in f:
@@ -152,6 +152,7 @@ def jload_lines(fp, max_data_num=None, return_generator=False):
         return gen
     return list(gen)
 
+
 # table类的文件转化为list of dict
 
 
@@ -161,7 +162,7 @@ def table2json(path, **kwargs):
     if path.endswith("xlsx"):
         df = pd.read_excel(path, **kwargs)
     df.replace(np.nan, None, inplace=True)
-    cols = [e for e in cols if not str(e).startswith("Unnamed")]
+    cols = [e for e in df.columns if not str(e).startswith("Unnamed")]
     df = df[cols]
     records = df.to_dict(orient="records")
     return records
@@ -184,18 +185,18 @@ def dump2table(data, path: str):
 # 一行一行地读取文件内容
 def load_lines(fp, return_generator=False):
     if isinstance(fp, str):
-        fp = open(fp, mode="r", encoding="utf8")
+        fp = open(fp, encoding="utf8")
     with fp:
         lines = fp.readlines()
         if return_generator:
             return (e.strip() for e in lines if e)
         return [e.strip() for e in lines if e]
 
+
 # 根据后缀名读取list数据
 
 
-def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
-
+def read2list(file_path: str | list, **kwargs) -> list[str | dict]:
     def _read2list(file_path, **kwargs):
         suffix = os.path.splitext(file_path)[-1].lower()
         if suffix == ".json":
@@ -209,6 +210,7 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
         else:
             logger.warning(f"unknown suffix:{suffix}, read as txt")
             return load_lines(file_path, **kwargs)
+
     if isinstance(file_path, str):
         file_path = glob.glob(file_path) if "*" in file_path else [file_path]
 
@@ -227,7 +229,7 @@ def read2list(file_path: Union[str, List], **kwargs) -> List[Union[str, dict]]:
 
 
 # 将list数据按照后缀名格式dump到文件
-def dump2list(data: List, file_path: str, **kwargs):
+def dump2list(data: list, file_path: str, **kwargs):
     create_dir_path(file_path)
     suffix = os.path.splitext(file_path)[-1].lower()
     if suffix == ".json":
@@ -272,13 +274,13 @@ def pretty_floats(obj, r=4):
         return round(obj, r)
     elif isinstance(obj, dict):
         return dict((k, pretty_floats(v)) for k, v in obj.items())
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, list | tuple):
         return map(pretty_floats, obj)
     return obj
 
 
 # 将data batch化输出
-def get_batched_data(data: Iterable, batch_size: int) -> Iterable[List]:
+def get_batched_data(data: Iterable, batch_size: int) -> Iterable[list]:
     """将数据按照batch_size分组
 
     Args:
@@ -303,7 +305,7 @@ batchify = get_batched_data
 # 将$seq序列转化成下标到元素以及元素到下标的dict
 
 
-def seq2dict(seq: Sequence) -> Tuple[dict, dict]:
+def seq2dict(seq: Sequence) -> tuple[dict, dict]:
     item2id = {item: idx for idx, item in enumerate(seq)}
     id2item = {idx: item for idx, item in enumerate(seq)}
     return item2id, id2item
@@ -317,7 +319,7 @@ def get_current_time_str(fmt="%Y-%m-%d-%H:%M:%S") -> str:
 
 # 执行一个shell命令
 def execute_cmd(cmd: str):
-    logger.info("execute cmd:{}".format(cmd))
+    logger.info(f"execute cmd:{cmd}")
     status, output = subprocess.getstatusoutput(cmd)
     logger.info(f"status:{status}\noutput{output}")
     return status, output
@@ -333,8 +335,7 @@ def flat(seq: Sequence[Iterable]) -> Iterable:
 
 # 将$seq序列聚合成dict。 key表示字典key生成的函数。 map_func表示字典value值的映射函数。
 # 返回的字典会根据value序列长度倒序排序
-def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x, reduce_func=None,
-            sort_type="v_len", reverse=True) -> Dict[Any, List]:
+def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x, reduce_func=None, sort_type="v_len", reverse=True) -> dict[Any, list]:
     rs_dict = collections.defaultdict(list)
     for i in seq:
         rs_dict[key(i)].append(map_func(i))
@@ -345,6 +346,7 @@ def groupby(seq: Sequence, key=lambda x: x, map_func=lambda x: x, reduce_func=No
         if sort_type == "k":
             return x[0]
         return 0
+
     items = sorted(rs_dict.items(), key=sort_func, reverse=reverse)
     if reduce_func:
         items = [(k, reduce_func(v)) for k, v in items]
@@ -367,6 +369,7 @@ def print_info(info, target_logger=None, fix_length=128):
     else:
         print(star_info)
 
+
 # 把一个dict转化到一个Union类型
 
 
@@ -375,9 +378,10 @@ def union_parse_obj(union: _GenericAlias, d: dict):
         try:
             obj = cls(**d)
             return obj
-        except:
+        except Exception:
             pass
     raise Exception(f"fail to convert {d} to union {union}")
+
 
 # 获取一个包的最新version
 
@@ -385,7 +389,7 @@ def union_parse_obj(union: _GenericAlias, d: dict):
 def get_latest_version(package_name: str) -> str:
     cmd = f"pip install {package_name}=="
     status, output = execute_cmd(cmd)
-    pattern = "\(from versions:(.*?)\)"
+    pattern = "(from versions:(.*?))"
 
     for item in re.findall(pattern, output):
         item = item.strip()
@@ -393,12 +397,12 @@ def get_latest_version(package_name: str) -> str:
             return "0.0.1"
 
         # item
-        versions = [tuple(int(i) for i in e.strip().split("."))
-                    for e in item.split(",")]
+        versions = [tuple(int(i) for i in e.strip().split(".")) for e in item.split(",")]
         # versions
         latest_version = max(versions)
         latest_version = ".".join(str(i) for i in latest_version)
         return latest_version
+
 
 # 获取一个version的下一个版本
 
@@ -408,9 +412,9 @@ def get_next_version(version: str, level=0) -> str:
     idx = len(pieces) - level - 1
     val = pieces[idx]
     if val.startswith("v"):
-        pieces[idx] = "v" + str(int(val[1])+1)
+        pieces[idx] = "v" + str(int(val[1]) + 1)
     else:
-        pieces[idx] = str(int(val)+1)
+        pieces[idx] = str(int(val) + 1)
     return ".".join(pieces)
 
 
@@ -437,10 +441,11 @@ def deep_update(origin: dict, new_data: dict, inplace=True) -> dict:
                 else:
                     tu[k] = v
         return tu
+
     return _deep_update_inplace(to_update, new_data)
 
 
-def delete_paths(paths: str | List[str]):
+def delete_paths(paths: str | list[str]):
     if isinstance(paths, str):
         paths = [paths]
     for path in paths:
@@ -474,7 +479,7 @@ def batch_process_with_save(data: Iterable, func: Callable, file_path: str, batc
 
     logger.info(f"{len(acc)} history data loaded")
     # logger.info(history_files)
-    data = data[len(acc):]
+    data = data[len(acc) :]
 
     for idx, batch in enumerate(batchify(data, batch_size)):
         batch_result = list(func(batch, **kwargs))
@@ -497,4 +502,5 @@ def add_callback2gen(items: Iterator, callback: Callable, **kwargs) -> Iterator:
             yield item
             acc.append(item)
         callback(acc, **kwargs)
+
     return gen()

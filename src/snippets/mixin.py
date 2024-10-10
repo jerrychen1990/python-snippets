@@ -12,7 +12,7 @@ from typing import Union
 
 class ConfigMixin:
     @classmethod
-    def from_config(cls, config: Union[dict, str]):
+    def from_config(cls, config: dict | str):
         if isinstance(config, str):
             if config.endswith(".json"):
                 config = jload(config)

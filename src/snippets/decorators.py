@@ -13,10 +13,10 @@ import inspect
 import os
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from collections.abc import Generator, Iterable
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import wraps
-from typing import Generator, Iterable, List, Tuple
-
+from typing import list, tuple
 
 from loguru import logger as default_logger
 from tqdm import tqdm
@@ -39,7 +39,7 @@ def log_cost_time(name=None, level="INFO", logger=None, star_len=0):
 # 输出执行时长的包装器
 
 
-class LogCostContext(object):
+class LogCostContext:
     def __init__(self, name, level="INFO", logger=None, star_len=0):
         self.name = name
         self.level = level
@@ -152,8 +152,7 @@ def adapt_single(ele_name: str):
         @wraps(func)
         def wrapped(*args, **kwargs):
             if ele_name in kwargs:
-                is_single = not isinstance(
-                    kwargs[ele_name], (List, Generator, Tuple))
+                is_single = not isinstance(kwargs[ele_name], list | Generator | tuple)
             else:
                 is_single = False
             if is_single:

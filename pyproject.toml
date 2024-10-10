@@ -1,0 +1,39 @@
+[project]
+name = "python-snippets"
+version = "0.1.1"
+description = "useful python snippets for jerry"
+requires-python = ">=3.10"
+dependencies = [
+    "tqdm>=4.66.2",
+    "pydantic>=2.6.3",
+    "numpy>=1.26.4",
+    "pandas>=2.2.1",
+    "requests>=2.31.0",
+    "loguru>=0.7.2",
+    "openpyxl>=3.1.2",
+    "click>=8.1.7",
+    "cachetools>=5.3.3",
+]
+authors = [{ name = "jerry", email = "jerrychen1990@gmail.com" }]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+[tool.hatch.build.targets.wheel]
+packages = ["src/snippets"]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 140 # 代码最大行宽
+select = [ # 选择的规则
+    "F",
+    "E",
+    "W",
+    "UP",
+]
+ignore = ["F401", "F405", "UP009", "F403", "F541"] # 忽略的规则

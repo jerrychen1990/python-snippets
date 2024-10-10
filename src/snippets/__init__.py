@@ -11,14 +11,14 @@
 
 import os
 
-
-from snippets.perf import *
-from snippets.logs import *
 from snippets.decorators import *
-from snippets.utils import *
-from snippets.mixin import *
 from snippets.evaluate import *
+from snippets.logs import *
+from snippets.mixin import *
+from snippets.perf import *
+from snippets.utils import *
 
+__version__ = "0.1.1"
 
 SNIPPETS_ENV = os.environ.get("SNIPPETS_ENV", "prod")
 logger = set_logger(SNIPPETS_ENV, __name__)
