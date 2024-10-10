@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2023/10/16 14:09:07
 @Author  :   ChenHao
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
 
 from snippets.utils import jload
-from typing import Union
 
 
 class ConfigMixin:

@@ -8,6 +8,7 @@
    Description :
 -------------------------------------------------
 """
+
 import asyncio
 import inspect
 import os
@@ -16,7 +17,6 @@ import time
 from collections.abc import Generator, Iterable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import wraps
-from typing import list, tuple
 
 from loguru import logger as default_logger
 from tqdm import tqdm
@@ -27,14 +27,14 @@ def log_cost_time(name=None, level="INFO", logger=None, star_len=0):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            with LogCostContext(name=name if name else func.__name__,
-                                level=level, star_len=star_len, logger=logger):
+            with LogCostContext(name=name if name else func.__name__, level=level, star_len=star_len, logger=logger):
                 res = func(*args, **kwargs)
             return res
 
         return wrapped
 
     return wrapper
+
 
 # 输出执行时长的包装器
 
@@ -62,9 +62,7 @@ class LogCostContext:
 
 
 # 执行函数时输出函数的参数以及返回值
-def log_function_info(input_level="DEBUG", result_level="DEBUG",
-                      exclude_self=True):
-
+def log_function_info(input_level="DEBUG", result_level="DEBUG", exclude_self=True):
     def wrapper(func):
         is_async = inspect.iscoroutinefunction(func)
 
@@ -84,6 +82,7 @@ def log_function_info(input_level="DEBUG", result_level="DEBUG",
             return res
 
         if is_async:
+
             @wraps(func)
             async def wrapped_func(*args, **kwargs):
                 show_args(*args, **kwargs)
@@ -91,15 +90,18 @@ def log_function_info(input_level="DEBUG", result_level="DEBUG",
                 show_result(res)
                 return res
         else:
+
             @wraps(func)
             def wrapped_func(*args, **kwargs):
                 show_args(*args, **kwargs)
                 res = func(*args, **kwargs)
                 show_result(res)
                 return res
+
         return wrapped_func
 
     return wrapper
+
 
 # 将同步函数包装成异步
 
@@ -109,6 +111,7 @@ def asyncify(sync_func):
     async def wrapper(*args, **kwargs):
         # 将同步函数转为异步调用
         return await asyncio.to_thread(sync_func, *args, **kwargs)
+
     return wrapper
 
 
@@ -116,11 +119,10 @@ def asyncify(sync_func):
 def ensure_file_path(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        path = kwargs['path']
+        path = kwargs["path"]
         dir_path = os.path.dirname(path)
         os.makedirs(dir_path, exist_ok=True)
         return func(*args, **kwargs)
-
 
     return wrapper
 
@@ -129,7 +131,7 @@ def ensure_file_path(func):
 def ensure_dir_path(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        dir_path = kwargs['path']
+        dir_path = kwargs["path"]
         os.makedirs(dir_path, exist_ok=True)
         return func(*args, **kwargs)
 
@@ -143,6 +145,7 @@ def discard_kwarg(func):
     def wrap(*args, **kwargs):
         kwargs = {k: v for k, v in kwargs.items() if k in arg_names}
         return func(*args, **kwargs)
+
     return wrap
 
 
@@ -161,8 +164,11 @@ def adapt_single(ele_name: str):
             if is_single:
                 rs = rs[0]
             return rs
+
         return wrapped
+
     return wrapper
+
 
 # 自动加上重试功能
 
@@ -186,10 +192,12 @@ def retry(retry_num: int, wait_time: float | tuple[float, float], level="INFO"):
                     else:
                         wt = wait_time
 
-                    default_logger.log(level, f'retry {func.__name__}, {num_left} attempts left, sleep:{wt:2.3f} seconds')
+                    default_logger.log(level, f"retry {func.__name__}, {num_left} attempts left, sleep:{wt:2.3f} seconds")
                     time.sleep(wt)
                     num_left -= 1
+
         return wrapped
+
     return wrapper
 
 
@@ -201,6 +209,7 @@ def multi_thread(work_num, return_list=False, safe_execute=True):
         return_list (bool, optional): 结果是否返回list. Defaults to False.
         safe_execute (bool, optional): 是不是catch住function中的exception并返回None. Defaults to True.
     """
+
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable, *args, **kwargs):
@@ -217,12 +226,14 @@ def multi_thread(work_num, return_list=False, safe_execute=True):
 
             executors = ThreadPoolExecutor(work_num)
             rs_iter = executors.map(_func, data)
-            total = None if not hasattr(data, '__len__') else len(data)
+            total = None if not hasattr(data, "__len__") else len(data)
             rs_iter = tqdm(rs_iter, total=total)
             rs_iter = (e for e in rs_iter if e is not None)
 
             return list(rs_iter) if return_list else rs_iter
+
         return wrapped
+
     return wrapper
 
 
@@ -231,18 +242,19 @@ batch_process = multi_thread
 # 多进程不可以使用内部定义的function
 
 
-def multi_process(work_num,  return_list=False):
+def multi_process(work_num, return_list=False):
     def wrapper(func):
         @wraps(func)
         def wrapped(data: Iterable):
             executors = ProcessPoolExecutor(work_num)
             rs_iter = executors.map(func, data)
             rs = rs_iter
-            total = None if not hasattr(data, '__len__') else len(data)
+            total = None if not hasattr(data, "__len__") else len(data)
             rs_iter = tqdm(rs_iter, total=total)
             return list(rs_iter) if return_list else rs
 
         return wrapped
+
     return wrapper
 
 
@@ -253,6 +265,7 @@ if __name__ == "__main__":
     def add1(a):
         print(f"process {a}")
         return a + 1
+
     with executors:
         rs_iter = executors.map(add1, range(10))
         for e in rs_iter:

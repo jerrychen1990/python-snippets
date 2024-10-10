@@ -21,7 +21,7 @@ import subprocess
 import time
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from datetime import datetime
-from typing import Any, _GenericAlias, dict, list, tuple
+from typing import Any, _GenericAlias
 
 import numpy as np
 import pandas as pd
@@ -389,24 +389,14 @@ def union_parse_obj(union: _GenericAlias, d: dict):
 def get_latest_version(package_name: str) -> str:
     cmd = f"pip install {package_name}=="
     status, output = execute_cmd(cmd)
-    pattern = "(from versions:(.*?))"
-
-    for item in re.findall(pattern, output):
-        item = item.strip()
-        if not item or item == "none":
-            return "0.0.1"
-
-        # item
-        versions = [tuple(int(i) for i in e.strip().split(".")) for e in item.split(",")]
-        # versions
-        latest_version = max(versions)
-        latest_version = ".".join(str(i) for i in latest_version)
-        return latest_version
+    pattern = r"(\d+\.\d+\.\d+)"
+    versions = list(re.findall(pattern, output))
+    if not versions:
+        return "0.0.1"
+    return sorted(versions, key=lambda x: tuple(int(i) for i in x.split(".")))[-1]
 
 
 # 获取一个version的下一个版本
-
-
 def get_next_version(version: str, level=0) -> str:
     pieces = version.split(".")
     idx = len(pieces) - level - 1

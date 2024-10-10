@@ -12,7 +12,10 @@
 import unittest
 from time import sleep
 
+from snippets.logs import set_logger
 from snippets.utils import *
+
+logger = set_logger("dev", __name__)
 
 
 class TestUtils(unittest.TestCase):
@@ -53,6 +56,7 @@ class TestUtils(unittest.TestCase):
     def test_get_latest_version(self):
         latest_version = get_latest_version("python-snippets")
         logger.info(latest_version)
+        print(latest_version)
 
     def test_deep_update(self):
         origin = dict(a=1, b=dict(c=1), c="c")

@@ -1,6 +1,6 @@
 [project]
 name = "python-snippets"
-version = "0.1.1"
+version = "0.1.2"
 description = "useful python snippets for jerry"
 requires-python = ">=3.10"
 dependencies = [
@@ -21,7 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 [tool.hatch.build.targets.wheel]
-packages = ["src/snippets"]
+packages = ["snippets"]
 
 
 [build-system]
